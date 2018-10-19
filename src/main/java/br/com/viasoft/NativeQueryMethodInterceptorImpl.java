@@ -1,7 +1,10 @@
 package br.com.viasoft;
 
 import org.hibernate.Session;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.transform.Transformers;
+import org.hibernate.type.LongType;
+import org.springframework.data.domain.PageImpl;
 
 import javax.persistence.EntityManager;
 
@@ -17,7 +20,23 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
             query.setFirstResult(info.getFirstResult());
             query.setMaxResults(info.getMaxResult());
         }
-        return query.setResultTransformer(Transformers.aliasToBean(info.getType())).list();
+        query.setResultTransformer(Transformers.aliasToBean(info.getAliasToBean()));
+        if (info.isSingleResult()) {
+            return query.getSingleResult();
+        }
+
+        var resultList = query.list();
+        if (info.isPagination()) {
+            return new PageImpl(resultList, info.getPageable(), getTotalRecords(info, entityManager));
+        }
+        return resultList;
+    }
+
+    private Long getTotalRecords(NativeQueryInfo info, EntityManager entityManager) {
+        var query = entityManager.createNativeQuery(info.getSqlTotalRecord());
+        query.unwrap(NativeQuery.class).addScalar("totalRecords", LongType.INSTANCE);
+        info.getParameterList().forEach(p -> query.setParameter(p.getName(), p.getValue()));
+        return (Long) query.getSingleResult();
     }
 
 }

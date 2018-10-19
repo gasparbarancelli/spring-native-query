@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.aopalliance.intercept.MethodInvocation;
 import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.ClassTypeInformation;
 
@@ -19,7 +20,13 @@ public class NativeQueryInfo {
 
     private Pageable pageable;
 
-    private Class<?> type;
+    private Class<?> aliasToBean;
+
+    private Class<?> returnType;
+
+    private boolean returnTypeIsIterable;
+
+    private String sql;
 
     private NativeQueryInfo() {
     }
@@ -41,21 +48,46 @@ public class NativeQueryInfo {
             }
         }
 
-        var componentType = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod()).getComponentType();
-        info.type = componentType.getType();
+        info.returnType = invocation.getMethod().getReturnType();
+        info.returnTypeIsIterable = Iterable.class.isAssignableFrom(info.returnType);
+        if (info.returnTypeIsIterable) {
+            var componentType = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod()).getComponentType();
+            info.aliasToBean = componentType.getType();
+        } else {
+            info.aliasToBean = info.returnType;
+        }
 
         return info;
     }
 
     String getSql() {
-        JtwigTemplate template = JtwigTemplate.classpathTemplate("nativeQuery/" + file + ".twig");
-        JtwigModel model = JtwigModel.newModel();
-        parameterList.forEach(p -> model.with(p.getName(), p.getValue()));
-        return template.render(model);
+        if (sql == null) {
+            JtwigTemplate template = JtwigTemplate.classpathTemplate("nativeQuery/" + file + ".twig");
+            JtwigModel model = JtwigModel.newModel();
+            parameterList.forEach(p -> model.with(p.getName(), p.getValue()));
+            sql = template.render(model);
+        }
+        return sql;
+    }
+
+    String getSqlTotalRecord() {
+        return "select count(*) as totalRecords from (" + getSql() + ") x";
+    }
+
+    boolean isPagination() {
+        return Page.class.isAssignableFrom(returnType);
+    }
+
+    boolean isSingleResult() {
+        return !returnTypeIsIterable;
     }
 
     boolean hasPagination() {
         return pageable != null;
+    }
+
+    Pageable getPageable() {
+        return pageable;
     }
 
     int getFirstResult() {
