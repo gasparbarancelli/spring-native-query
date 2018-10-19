@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=br.com.viasoft.NativeQueryConfig,\
+  br.com.viasoft.ApplicationContextProvider
