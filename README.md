@@ -33,7 +33,7 @@ public interface UserNativeQuery implementes NativeQuery {
   
   List<UserTO> findActiveUsers(Pageagle pageable);
   
-  UsuarioTO findUserById(Number id);
+  UserTO findUserById(Number id);
   
 }
 ```
