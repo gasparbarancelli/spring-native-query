@@ -20,7 +20,9 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
             query.setFirstResult(info.getFirstResult());
             query.setMaxResults(info.getMaxResult());
         }
-        query.setResultTransformer(Transformers.aliasToBean(info.getAliasToBean()));
+        if (!info.isJavaObject()) {
+            query.setResultTransformer(Transformers.aliasToBean(info.getAliasToBean()));
+        }
         if (info.isSingleResult()) {
             return query.getSingleResult();
         }

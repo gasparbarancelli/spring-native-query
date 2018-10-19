@@ -74,6 +74,10 @@ public class NativeQueryInfo {
         return "select count(*) as totalRecords from (" + getSql() + ") x";
     }
 
+    boolean isJavaObject() {
+        return "java.lang".equals(aliasToBean.getPackageName());
+    }
+
     boolean isPagination() {
         return Page.class.isAssignableFrom(returnType);
     }
