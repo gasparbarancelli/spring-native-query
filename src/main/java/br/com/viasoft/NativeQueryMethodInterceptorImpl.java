@@ -14,13 +14,19 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
     public Object executeQuery(NativeQueryInfo info) {
         var entityManager = ApplicationContextProvider.getApplicationContext().getBean(EntityManager.class);
         var session = entityManager.unwrap(Session.class);
-        var query = session.createNativeQuery(info.getSql());
-        info.getParameterList().forEach(p -> query.setParameter(p.getName(), p.getValue()));
+        NativeQuery query;
+        if (info.isEntity()) {
+            query = session.createNativeQuery(info.getSql(), info.getAliasToBean());
+        } else {
+            query = session.createNativeQuery(info.getSql());
+        }
+
+        info.getParameterList().forEach(p -> query.setParameter(p.getName(), p.getOperator().getTransformParam().apply(p.getValue())));
         if (info.hasPagination()) {
             query.setFirstResult(info.getFirstResult());
             query.setMaxResults(info.getMaxResult());
         }
-        if (!info.isJavaObject()) {
+        if (!info.isJavaObject() && !info.isEntity()) {
             query.setResultTransformer(Transformers.aliasToBean(info.getAliasToBean()));
         }
         if (info.isSingleResult()) {

@@ -9,6 +9,8 @@ class NativeQueryParameter {
 
     private String name;
 
+    private NativeQueryOperator operator;
+
     private Object value;
 
 }

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.ClassTypeInformation;
 
+import javax.persistence.Entity;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,13 +29,19 @@ public class NativeQueryInfo {
 
     private String sql;
 
+    private Boolean isEntity;
+
     private NativeQueryInfo() {
     }
 
-    public static NativeQueryInfo of(MethodInvocation invocation) {
+    public static NativeQueryInfo of(Class<? extends NativeQuery> classe, MethodInvocation invocation) {
         var info = new NativeQueryInfo();
 
-        info.file = invocation.getMethod().getName();
+        info.file = "nativeQuery/";
+        if (classe.isAnnotationPresent(NativeQueryFolder.class)) {
+            info.file += classe.getAnnotation(NativeQueryFolder.class).value() + "/";
+        }
+        info.file += invocation.getMethod().getName() + ".twig";
 
         info.parameterList = new ArrayList<>();
         info.pageable = null;
@@ -44,7 +51,14 @@ public class NativeQueryInfo {
             if (parameter.getType().isAssignableFrom(Pageable.class)) {
                 info.pageable = (Pageable) argument;
             } else {
-                info.parameterList.add(new NativeQueryParameter(parameter.getName(), argument));
+                NativeQueryParameter nativeQueryParameter;
+                if (parameter.isAnnotationPresent(NativeQueryParam.class)) {
+                    var param = parameter.getAnnotation(NativeQueryParam.class);
+                    nativeQueryParameter = new NativeQueryParameter(param.value(), param.operator(), argument);
+                } else {
+                    nativeQueryParameter = new NativeQueryParameter(parameter.getName(), null, argument);
+                }
+                info.parameterList.add(nativeQueryParameter);
             }
         }
 
@@ -62,7 +76,7 @@ public class NativeQueryInfo {
 
     String getSql() {
         if (sql == null) {
-            JtwigTemplate template = JtwigTemplate.classpathTemplate("nativeQuery/" + file + ".twig");
+            JtwigTemplate template = JtwigTemplate.classpathTemplate(file);
             JtwigModel model = JtwigModel.newModel();
             parameterList.forEach(p -> model.with(p.getName(), p.getValue()));
             sql = template.render(model);
@@ -72,6 +86,13 @@ public class NativeQueryInfo {
 
     String getSqlTotalRecord() {
         return "select count(*) as totalRecords from (" + getSql() + ") x";
+    }
+
+    boolean isEntity() {
+        if (isEntity == null) {
+            isEntity = aliasToBean.isAnnotationPresent(Entity.class);
+        }
+        return isEntity;
     }
 
     boolean isJavaObject() {

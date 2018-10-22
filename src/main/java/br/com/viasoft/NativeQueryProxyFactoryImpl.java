@@ -21,7 +21,7 @@ public class NativeQueryProxyFactoryImpl implements NativeQueryProxyFactory {
             if ("toString".equals(invocation.getMethod().getName())) {
                 return "NativeQuery Implementation";
             }
-            var info = NativeQueryInfo.of(invocation);
+            var info = NativeQueryInfo.of(classe, invocation);
             return nativeQueryMethodInterceptor.executeQuery(info);
         });
         return proxy.getProxy(classe.getClassLoader());
