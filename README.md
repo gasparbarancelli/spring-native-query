@@ -35,6 +35,10 @@ public interface UserNativeQuery implementes NativeQuery {
   
   UserTO findUserById(Number id);
   
+  List<Number> getUsersId();
+  
+  String getUserName(Number id);
+  
 }
 ```
 
@@ -51,6 +55,16 @@ SELECT id, name FROM USER WHERE ACTIVE = true
 > findUserById.twig file example
 ```sql
 SELECT id, name FROM USER WHERE id = :id
+```
+
+> getUsersId file example
+```sql
+SELECT id FROM USER
+```
+
+> getUserName file example
+```sql
+SELECT name FROM USER WHERE id = :id
 ```
 
 > UserController file example
@@ -79,6 +93,16 @@ public class UserController {
   @GetMapping("{id}")
   public UserTO findUsers(@PathVariable("id") Number id) {
     return userNativeQuery.findUserById(id);
+  }
+  
+  @GetMapping("ids")
+  public List<Number> getIds() {
+    return userNativeQuery.getUsersId();
+  }
+  
+  @GetMapping("{id}/name")
+  public String getUserName(@PathVariable("id") Number id) {
+    return userNativeQuery.getUserName(id);
   }
 
 }
