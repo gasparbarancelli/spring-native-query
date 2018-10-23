@@ -51,14 +51,16 @@ public class NativeQueryInfo {
             if (parameter.getType().isAssignableFrom(Pageable.class)) {
                 info.pageable = (Pageable) argument;
             } else {
-                NativeQueryParameter nativeQueryParameter;
                 if (parameter.isAnnotationPresent(NativeQueryParam.class)) {
                     var param = parameter.getAnnotation(NativeQueryParam.class);
-                    nativeQueryParameter = new NativeQueryParameter(param.value(), param.operator(), argument);
+                    if (param.addChildren()) {
+                        info.parameterList.addAll(NativeQueryParameter.ofDeclaredMethods(param.value(), parameter.getType(), argument));
+                    } else {
+                        info.parameterList.add(new NativeQueryParameter(param.value(), param.operator().getTransformParam().apply(argument)));
+                    }
                 } else {
-                    nativeQueryParameter = new NativeQueryParameter(parameter.getName(), null, argument);
+                    info.parameterList.add(new NativeQueryParameter(parameter.getName(), argument));
                 }
-                info.parameterList.add(nativeQueryParameter);
             }
         }
 
@@ -76,7 +78,7 @@ public class NativeQueryInfo {
 
     String getSql() {
         if (sql == null) {
-            JtwigTemplate template = JtwigTemplate.classpathTemplate(file);
+            JtwigTemplate template = JtwigTemplate.classpathTemplate(file, JtwigTemplateConfig.get());
             JtwigModel model = JtwigModel.newModel();
             parameterList.forEach(p -> model.with(p.getName(), p.getValue()));
             sql = template.render(model);

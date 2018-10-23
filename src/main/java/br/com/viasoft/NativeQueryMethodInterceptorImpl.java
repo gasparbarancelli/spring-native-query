@@ -7,6 +7,7 @@ import org.hibernate.type.LongType;
 import org.springframework.data.domain.PageImpl;
 
 import javax.persistence.EntityManager;
+import java.util.List;
 
 public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterceptor {
 
@@ -21,7 +22,8 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
             query = session.createNativeQuery(info.getSql());
         }
 
-        info.getParameterList().forEach(p -> query.setParameter(p.getName(), p.getOperator().getTransformParam().apply(p.getValue())));
+        addParameter(query, info.getParameterList());
+
         if (info.hasPagination()) {
             query.setFirstResult(info.getFirstResult());
             query.setMaxResults(info.getMaxResult());
@@ -35,16 +37,24 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
 
         var resultList = query.list();
         if (info.isPagination()) {
-            return new PageImpl(resultList, info.getPageable(), getTotalRecords(info, entityManager));
+            return new PageImpl(resultList, info.getPageable(), getTotalRecords(info, session));
         }
         return resultList;
     }
 
-    private Long getTotalRecords(NativeQueryInfo info, EntityManager entityManager) {
-        var query = entityManager.createNativeQuery(info.getSqlTotalRecord());
+    private Long getTotalRecords(NativeQueryInfo info, Session session) {
+        NativeQuery query = session.createNativeQuery(info.getSqlTotalRecord());
         query.unwrap(NativeQuery.class).addScalar("totalRecords", LongType.INSTANCE);
-        info.getParameterList().forEach(p -> query.setParameter(p.getName(), p.getValue()));
+        addParameter(query, info.getParameterList());
         return (Long) query.getSingleResult();
+    }
+
+    private void addParameter(NativeQuery query, List<NativeQueryParameter> parameterList) {
+        parameterList.forEach(p -> {
+            if (p.getValue() != null) {
+                query.setParameter(p.getName(), p.getValue());
+            }
+        });
     }
 
 }

@@ -9,7 +9,7 @@ import java.util.function.Function;
 
 public enum NativeQueryOperator {
 
-    EQUAL(value -> value),
+    DEFAULT(value -> value),
     CONTAINING(new TransformParamContaining()),
     STARTS_WITH(new TransformParamStartsWith()),
     ENDS_WITH(new TransformParamEndsWith());
