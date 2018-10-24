@@ -22,7 +22,7 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
             query = session.createNativeQuery(info.getSql());
         }
 
-        addParameter(query, info.getParameterList());
+        addParameter(query, info);
 
         if (info.hasPagination()) {
             query.setFirstResult(info.getFirstResult());
@@ -45,13 +45,13 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
     private Long getTotalRecords(NativeQueryInfo info, Session session) {
         NativeQuery query = session.createNativeQuery(info.getSqlTotalRecord());
         query.unwrap(NativeQuery.class).addScalar("totalRecords", LongType.INSTANCE);
-        addParameter(query, info.getParameterList());
+        addParameter(query, info);
         return (Long) query.getSingleResult();
     }
 
-    private void addParameter(NativeQuery query, List<NativeQueryParameter> parameterList) {
-        parameterList.forEach(p -> {
-            if (p.getValue() != null) {
+    private void addParameter(NativeQuery query, NativeQueryInfo info) {
+        info.getParameterList().forEach(p -> {
+            if (p.getValue() != null && info.getSql().contains(":" + p.getName())) {
                 query.setParameter(p.getName(), p.getValue());
             }
         });

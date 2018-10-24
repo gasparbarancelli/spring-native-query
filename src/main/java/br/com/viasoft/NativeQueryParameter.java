@@ -22,37 +22,57 @@ class NativeQueryParameter {
     static List<NativeQueryParameter> ofDeclaredMethods(String parentName, Class classe, Object object) {
         var parameterList = new ArrayList<NativeQueryParameter>();
 
-        Map<String, NativeQueryParam> mapField = new HashMap<>();
+        @AllArgsConstructor
+        class FieldInfo {
+
+            NativeQueryParam param;
+
+            Class type;
+
+        }
+
+        Map<String, FieldInfo> mapField = new HashMap<>();
         for (Field field : classe.getDeclaredFields()) {
+            NativeQueryParam param = null;
             if (field.isAnnotationPresent(NativeQueryParam.class)) {
-                mapField.put(WordUtils.capitalize(field.getName()), field.getAnnotation(NativeQueryParam.class));
+                param = field.getAnnotation(NativeQueryParam.class);
             }
+            mapField.put(WordUtils.capitalize(field.getName()), new FieldInfo(param, field.getType()));
         }
 
         for (Method method : classe.getDeclaredMethods()) {
             if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
+                Object value = null;
                 try {
-                    var value = method.invoke(object);
+                    value = method.invoke(object);
+                } catch (Exception ignore) {
+                }
 
-                    var methodName = method.getName().substring(method.getName().startsWith("get") ? 3 : 2);
+                var methodName = method.getName().substring(method.getName().startsWith("get") ? 3 : 2);
 
+                var fieldInfo = mapField.get(methodName);
+                // todo implement ready method wihout field
+                if (fieldInfo != null) {
                     NativeQueryParam queryParam;
                     if (method.isAnnotationPresent(NativeQueryParam.class)) {
                         queryParam = method.getAnnotation(NativeQueryParam.class);
                     } else {
-                        queryParam = mapField.get(methodName);
+                        queryParam = fieldInfo.param;
                     }
 
                     if (queryParam != null) {
-                        var paramName = parentName + WordUtils.capitalize(queryParam.value());
-                        var paramValue = queryParam.operator().getTransformParam().apply(value);
-                        parameterList.add(new NativeQueryParameter(paramName, paramValue));
+                        if (queryParam.addChildren()) {
+                            var parentNameChildren = parentName + WordUtils.capitalize(queryParam.value());
+                            parameterList.addAll(ofDeclaredMethods(parentNameChildren, fieldInfo.type, value));
+                        } else {
+                            var paramName = parentName + WordUtils.capitalize(queryParam.value());
+                            var paramValue = queryParam.operator().getTransformParam().apply(value);
+                            parameterList.add(new NativeQueryParameter(paramName, paramValue));
+                        }
                     } else {
                         var paramValue = NativeQueryOperator.DEFAULT.getTransformParam().apply(value);
                         parameterList.add(new NativeQueryParameter(parentName + methodName, paramValue));
                     }
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
                 }
             }
         }

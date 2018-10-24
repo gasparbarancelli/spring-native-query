@@ -6,6 +6,7 @@ import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.util.ClassTypeInformation;
 
 import javax.persistence.Entity;
@@ -75,13 +76,26 @@ public class NativeQueryInfo {
 
         return info;
     }
-
     String getSql() {
         if (sql == null) {
             JtwigTemplate template = JtwigTemplate.classpathTemplate(file, JtwigTemplateConfig.get());
             JtwigModel model = JtwigModel.newModel();
             parameterList.forEach(p -> model.with(p.getName(), p.getValue()));
             sql = template.render(model);
+
+            StringBuilder orderBuilder = new StringBuilder();
+            for (Sort.Order order : pageable.getSort()) {
+                if (orderBuilder.length() == 0) {
+                    orderBuilder.append(" ORDER BY ");
+                } else {
+                    orderBuilder.append(", ");
+                }
+                orderBuilder.append(order.getProperty())
+                        .append(" ")
+                        .append(order.getDirection().name());
+            }
+
+            sql += orderBuilder.toString();
         }
         return sql;
     }
