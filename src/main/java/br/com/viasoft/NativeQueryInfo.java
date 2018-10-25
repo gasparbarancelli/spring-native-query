@@ -83,19 +83,21 @@ public class NativeQueryInfo {
             parameterList.forEach(p -> model.with(p.getName(), p.getValue()));
             sql = template.render(model);
 
-            StringBuilder orderBuilder = new StringBuilder();
-            for (Sort.Order order : pageable.getSort()) {
-                if (orderBuilder.length() == 0) {
-                    orderBuilder.append(" ORDER BY ");
-                } else {
-                    orderBuilder.append(", ");
+            if (pageable != null) {
+                StringBuilder orderBuilder = new StringBuilder();
+                for (Sort.Order order : pageable.getSort()) {
+                    if (orderBuilder.length() == 0) {
+                        orderBuilder.append(" ORDER BY ");
+                    } else {
+                        orderBuilder.append(", ");
+                    }
+                    orderBuilder.append(order.getProperty())
+                            .append(" ")
+                            .append(order.getDirection().name());
                 }
-                orderBuilder.append(order.getProperty())
-                        .append(" ")
-                        .append(order.getDirection().name());
-            }
 
-            sql += orderBuilder.toString();
+                sql += orderBuilder.toString();
+            }
         }
         return sql;
     }
