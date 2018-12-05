@@ -10,8 +10,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.util.ClassTypeInformation;
 
 import javax.persistence.Entity;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Getter
 public class NativeQueryInfo {
@@ -32,6 +31,10 @@ public class NativeQueryInfo {
 
     private Boolean isEntity;
 
+    private Map<String, String> replaceSql = new HashMap<>();
+
+    private List<Class> processorSqlList = new ArrayList<>();
+
     private NativeQueryInfo() {
     }
 
@@ -43,6 +46,19 @@ public class NativeQueryInfo {
             info.file += classe.getAnnotation(NativeQueryFolder.class).value() + "/";
         }
         info.file += invocation.getMethod().getName() + ".twig";
+
+        if (invocation.getMethod().isAnnotationPresent(NativeQueryReplaceSql.class)) {
+            if (invocation.getMethod().getAnnotation(NativeQueryReplaceSql.class).values() != null
+                    && invocation.getMethod().getAnnotation(NativeQueryReplaceSql.class).values().length > 0) {
+                for (NativeQueryReplaceSqlParams value : invocation.getMethod().getAnnotation(NativeQueryReplaceSql.class).values()) {
+                    info.replaceSql.put(value.chave(), value.value());
+
+                }
+            }
+            if (invocation.getMethod().getAnnotation(NativeQueryReplaceSql.class).processorParams() != null) {
+                info.processorSqlList.addAll(Arrays.asList(invocation.getMethod().getAnnotation(NativeQueryReplaceSql.class).processorParams()));
+            }
+        }
 
         info.parameterList = new ArrayList<>();
         info.pageable = null;
@@ -82,6 +98,18 @@ public class NativeQueryInfo {
             JtwigModel model = JtwigModel.newModel();
             parameterList.forEach(p -> model.with(p.getName(), p.getValue()));
             sql = template.render(model);
+
+            for (Class aClass : processorSqlList) {
+                try {
+                    ProcessorSql processor = (ProcessorSql) aClass.newInstance();
+                    processor.execute(sql, replaceSql);
+                } catch (Exception e) {
+                    throw new RuntimeException(e.getMessage());
+                }
+            }
+            for (Map.Entry<String, String> replaceSqlEntry : replaceSql.entrySet()) {
+                sql = sql.replaceAll("\\$\\{"+replaceSqlEntry.getKey()+"\\}", replaceSqlEntry.getValue());
+            }
 
             if (pageable != null) {
                 StringBuilder orderBuilder = new StringBuilder();
