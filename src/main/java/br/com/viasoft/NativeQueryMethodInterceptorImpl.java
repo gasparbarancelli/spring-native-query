@@ -31,6 +31,10 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
         if (!info.isJavaObject() && !info.isEntity()) {
             query.setResultTransformer(Transformers.aliasToBean(info.getAliasToBean()));
         }
+        if (info.getReturnType().getSimpleName().equals(Void.TYPE.getName())) {
+            query.executeUpdate();
+            return null;
+        }
         if (info.isSingleResult()) {
             return query.getSingleResult();
         }
