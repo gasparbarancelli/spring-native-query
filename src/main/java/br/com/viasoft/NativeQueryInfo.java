@@ -142,7 +142,7 @@ public class NativeQueryInfo {
     }
 
     boolean isJavaObject() {
-        return "java.lang".equals(aliasToBean.getPackageName());
+        return aliasToBean.getPackageName().startsWith("java");
     }
 
     boolean isPagination() {
