@@ -12,6 +12,18 @@ Files with queries must be added to a folder named "nativeQuery" inside the reso
 
 Here is an example of using the framework.
 
+First define in your configuration file the package scan of your project, The files application.properties, bootstrap.yml and bootstrap.yaml are supported, the property.
+
+If you use properties file
+``` properties
+native-query.package-scan=br.com.viasoft
+```
+If you use yml file
+``` yml
+native-query:
+  package-scan: br.com.viasoft
+```
+
 > UserTO file example
 ```java
 import lombok.*;
@@ -48,7 +60,7 @@ import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 
-public interface UserNativeQuery implementes NativeQuery {
+public interface UserNativeQuery extends NativeQuery {
 
   List<UserTO> findUsers();
   
