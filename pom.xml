@@ -116,7 +116,7 @@
         <connection>scm:git:git://github.com/gasparbarancelli/spring-native-query.git</connection>
         <developerConnection>scm:git:ssh://github.com:gasparbarancelli/spring-native-query.git</developerConnection>
         <url>https://github.com/gasparbarancelli/spring-native-query</url>
-        <tag>1.0.1-SNAPSHOT</tag>
+        <tag>spring-native-query-1.0.0-SNAPSHOT</tag>
     </scm>
 
     <distributionManagement>
