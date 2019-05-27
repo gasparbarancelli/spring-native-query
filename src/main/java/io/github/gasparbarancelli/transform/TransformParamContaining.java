@@ -1,4 +1,4 @@
-package br.com.viasoft.transform;
+package io.github.gasparbarancelli.transform;
 
 import java.util.function.Function;
 

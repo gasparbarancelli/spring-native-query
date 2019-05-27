@@ -1,15 +1,14 @@
-package br.com.viasoft;
+package io.github.gasparbarancelli;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.METHOD})
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface NativeQueryReplaceSql {
+public @interface NativeQueryFolder {
 
-    NativeQueryReplaceSqlParams[] values() default {};
-    Class[] processorParams() default {};
+    String value();
 
 }

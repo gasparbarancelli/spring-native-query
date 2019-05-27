@@ -1,4 +1,4 @@
-package br.com.viasoft;
+package io.github.gasparbarancelli;
 
 import org.hibernate.Session;
 import org.hibernate.query.NativeQuery;
@@ -7,7 +7,6 @@ import org.hibernate.type.LongType;
 import org.springframework.data.domain.PageImpl;
 
 import javax.persistence.EntityManager;
-import java.util.List;
 
 public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterceptor {
 

@@ -1,4 +1,4 @@
-package br.com.viasoft;
+package io.github.gasparbarancelli;
 
 import lombok.Getter;
 import org.aopalliance.intercept.MethodInvocation;

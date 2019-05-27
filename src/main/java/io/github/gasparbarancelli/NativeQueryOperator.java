@@ -1,8 +1,8 @@
-package br.com.viasoft;
+package io.github.gasparbarancelli;
 
-import br.com.viasoft.transform.TransformParamContaining;
-import br.com.viasoft.transform.TransformParamEndsWith;
-import br.com.viasoft.transform.TransformParamStartsWith;
+import io.github.gasparbarancelli.transform.TransformParamContaining;
+import io.github.gasparbarancelli.transform.TransformParamEndsWith;
+import io.github.gasparbarancelli.transform.TransformParamStartsWith;
 import lombok.Getter;
 
 import java.util.function.Function;

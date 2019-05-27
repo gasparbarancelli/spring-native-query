@@ -1,2 +1,2 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=br.com.viasoft.NativeQueryConfig,\
-  br.com.viasoft.ApplicationContextProvider
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=io.github.gasparbarancelli.NativeQueryConfig,\
+  io.github.gasparbarancelli.ApplicationContextProvider

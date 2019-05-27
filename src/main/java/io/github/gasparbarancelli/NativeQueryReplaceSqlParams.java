@@ -1,4 +1,4 @@
-package br.com.viasoft;
+package io.github.gasparbarancelli;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

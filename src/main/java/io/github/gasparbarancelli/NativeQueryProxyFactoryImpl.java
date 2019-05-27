@@ -1,4 +1,4 @@
-package br.com.viasoft;
+package io.github.gasparbarancelli;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.mockito.Mockito;

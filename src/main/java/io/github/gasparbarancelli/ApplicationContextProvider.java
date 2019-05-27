@@ -1,4 +1,4 @@
-package br.com.viasoft;
+package io.github.gasparbarancelli;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;

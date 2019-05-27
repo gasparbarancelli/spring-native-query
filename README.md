@@ -37,8 +37,8 @@ public class UserTO {
 
 > UserTO file example
 ```java
-import br.com.viasoft.NativeQueryOperator;
-import br.com.viasoft.NativeQueryParam;
+import NativeQueryOperator;
+import NativeQueryParam;
 import lombok.*;
 
 @Data
@@ -55,7 +55,7 @@ public class UserFilter {
 
 > UserNativeQUery file example
 ```java
-import br.com.viasoft.NativeQuery;
+import NativeQuery;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
