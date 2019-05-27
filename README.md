@@ -12,6 +12,15 @@ Files with queries must be added to a folder named "nativeQuery" inside the reso
 
 Here is an example of using the framework.
 
+Add the dependency in your pom.xml
+```
+<dependency>
+    <groupId>io.github.gasparbarancelli</groupId>
+    <artifactId>spring-native-query</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```    
+
 First define in your configuration file the package scan of your project, The files application.properties, bootstrap.yml and bootstrap.yaml are supported, the property.
 
 If you use properties file
