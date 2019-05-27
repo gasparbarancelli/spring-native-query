@@ -1,3 +1,8 @@
+# spring-native-query
+![Github Issues](https://img.shields.io/github/issues/gasparbarancelli/spring-native-query.svg) ![Github Stars](https://img.shields.io/github/stars/gasparbarancelli/spring-native-query.svg) ![Java](https://img.shields.io/badge/java-100%25-brightgreen.svg) ![Twitter](https://img.shields.io/twitter/url/https/github.com%2Fgasparbarancelli%2Fspring-native-query.svg) ![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)
+
+# about spring-native-query
+
 This project aims to facilitate the execution of native queries in the database.
 
 The idea of ​​the project is to run queries by convention, similar to Spring Data.
@@ -9,6 +14,8 @@ The convention works the following way, the method name is the name of the file 
 The file that contains the SQL query is a Jtwig template, where we can apply validations in the query, a practical example to explain why we use template and not just a file containing SQL simply is the following, if you have a dynamic query, that conforms the values ​​of the methods you want to apply add or not a WHERE in the query, or modify it by completeness. The parameters of the methods besides being passed to the entity manager to execute the query are sent to the template.
 
 Files with queries must be added to a folder named "nativeQuery" inside the resources folder. Remember, the file name must be the same as the method name.
+
+# Example
 
 Here is an example of using the framework.
 
