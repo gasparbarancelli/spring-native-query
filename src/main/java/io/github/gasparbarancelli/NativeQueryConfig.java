@@ -49,11 +49,11 @@ public class NativeQueryConfig {
                 packageScan = map.get("package-scan");
             }
             if (packageScan == null || packageScan.isEmpty()) {
-                return "br.com.viasoft";
+                return "io.github.gasparbarancelli";
             }
             return packageScan;
         } catch (Exception e) {
-            return "br.com.viasoft";
+            return "io.github.gasparbarancelli";
         }
     }
 }

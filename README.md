@@ -16,12 +16,12 @@ First define in your configuration file the package scan of your project, The fi
 
 If you use properties file
 ``` properties
-native-query.package-scan=br.com.viasoft
+native-query.package-scan=io.github.gasparbarancelli
 ```
 If you use yml file
 ``` yml
 native-query:
-  package-scan: br.com.viasoft
+  package-scan: io.github.gasparbarancelli
 ```
 
 > UserTO file example
