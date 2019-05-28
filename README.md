@@ -3,23 +3,34 @@
 
 # about spring-native-query
 
-This project aims to facilitate the execution of native queries in the database.
+Running native queries to relational database using Java often leaves the source code confusing and extensive, when one has too many filter conditions and also changes in table bindings.
 
-The idea of ​​the project is to run queries by convention, similar to Spring Data.
+Because of this I decided to create the "Spring Native Query" library to facilitate the execution of native queries, with a focus on simplifying the source code, making it more readable and clean, creating files that contain the native queries and dynamically injecting assets to execute those queries.
 
-When creating a new interface that extends the NativeQuery interface, we create false objects of these interfaces, which we use proxy to intercept the method calls and execute the queries, at the end we register the beans of these interfaces dynamically, thus being able to inject the interfaces in all components of the Spring.
+The library's idea is to run convention queries, similar to Spring Data, and was built to work only with Spring Boot and Spring Data Jpa.
 
-The convention works the following way, the method name is the name of the file that will contain the query sql, the parameters of the methods will be passed as parameters to the entity manager, the return of the method is the object that will be transformed with the return of the Query.
+When creating a new interface that extends the NativeQuery interface, we create fake objects from these interfaces, where we use proxy to intercept method calls and execute queries, in the end we register the beans of those interfaces dynamically, so we can inject the interfaces into all the components of the Spring.
 
-The file that contains the SQL query is a Jtwig template, where we can apply validations in the query, a practical example to explain why we use template and not just a file containing SQL simply is the following, if you have a dynamic query, that conforms the values ​​of the methods you want to apply add or not a WHERE in the query, or modify it by completeness. The parameters of the methods besides being passed to the entity manager to execute the query are sent to the template.
+The convention works as follows, the method name is the name of the file that contains the sql query, the parameters of the methods will be passed as parameters to the entity manager, the method return is the object that will be transformed with the result returned from the query.
 
-Files with queries must be added to a folder named "nativeQuery" inside the resources folder. Remember, the file name must be the same as the method name.
+The file that contains the SQL query is a Jtwig template, where we can apply validations modifying the whole query, adding filters, changing links between tables, finally any changes in sql.
+
+By default native query files must be added to a folder named "nativeQuery" inside the resource folder. Remember, the file name must be the same as the method name.
 
 # Example
 
-Here is an example of using the framework.
+Here are some examples for a better understanding. Let's create a Spring Boot project with dependence, Spring Data Jpa and the H2 database. When starting the project, let's create a sql script by creating a new table and inserting some records. All sample source code is in github.
 
-Inside the resource folder create a file named data.sql and insert the script.
+> In your project add the dependency of the library, let's take an example using maven.
+```
+<dependency>
+    <groupId>io.github.gasparbarancelli</groupId>
+    <artifactId>spring-native-query</artifactId>
+    <version>1.0.1</version>
+</dependency>
+```    
+
+> Inside the resource folder create a file named data.sql and insert the script.
 ```sql
 CREATE TABLE USER (
   cod INT NOT NULL,
@@ -40,22 +51,13 @@ VALUES (1, 'Gaspar', 1),
        (9, 'Rafael', 0);
 ```
 
-In your project add the dependency of the library, let's take an example using maven.
-```
-<dependency>
-    <groupId>io.github.gasparbarancelli</groupId>
-    <artifactId>spring-native-query</artifactId>
-    <version>1.0.1</version>
-</dependency>
-```    
-
 First define in your configuration file the package scan of your project, The files application.properties, bootstrap.yml and bootstrap.yaml are supported, the property.
 
-If you use properties file
+> If you use properties file
 ``` properties
 native-query.package-scan=io.github.gasparbarancelli.demospringnativequery
 ```
-If you use yml file
+> If you use yml file
 ``` yml
 native-query:
   package-scan: io.github.gasparbarancelli.demospringnativequery
