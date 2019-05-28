@@ -166,7 +166,7 @@ SELECT cod as "id", full_name as "name" FROM USER WHERE ACTIVE = true
 SELECT cod as "id", full_name as "name" FROM USER WHERE cod = :codigo
 ```
 
-> getUsersId file example
+> getUsersId.twig file example
 ```sql
 SELECT cod as "id" FROM USER
 ```
