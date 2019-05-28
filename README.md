@@ -19,12 +19,33 @@ Files with queries must be added to a folder named "nativeQuery" inside the reso
 
 Here is an example of using the framework.
 
-Add the dependency in your pom.xml
+Inside the resource folder create a file named data.sql and insert the script.
+```sql
+CREATE TABLE USER (
+  cod INT NOT NULL,
+  full_name VARCHAR(45) NULL,
+  active INT NULL,
+  PRIMARY KEY (cod)
+);
+
+INSERT INTO USER (cod, full_name, active)
+VALUES (1, 'Gaspar', 1),
+       (2, 'Elton', 1),
+       (3, 'Lucini', 1),
+       (4, 'Diogo', 1),
+       (5, 'Daniel', 1),
+       (6, 'Marcos', 1),
+       (7, 'Fernanda', 1),
+       (8, 'Maicon', 1),
+       (9, 'Rafael', 0);
+```
+
+In your project add the dependency of the library, let's take an example using maven.
 ```
 <dependency>
     <groupId>io.github.gasparbarancelli</groupId>
     <artifactId>spring-native-query</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```    
 
@@ -32,12 +53,12 @@ First define in your configuration file the package scan of your project, The fi
 
 If you use properties file
 ``` properties
-native-query.package-scan=io.github.gasparbarancelli
+native-query.package-scan=io.github.gasparbarancelli.demospringnativequery
 ```
 If you use yml file
 ``` yml
 native-query:
-  package-scan: io.github.gasparbarancelli
+  package-scan: io.github.gasparbarancelli.demospringnativequery
 ```
 
 > UserTO file example
@@ -46,15 +67,17 @@ import lombok.*;
 
 @Data
 public class UserTO {
+
   private Number id;
   private String name;
+
 }
 ```
 
 > UserTO file example
 ```java
-import NativeQueryOperator;
-import NativeQueryParam;
+import io.github.gasparbarancelli.NativeQueryOperator;
+import io.github.gasparbarancelli.NativeQueryParam;
 import lombok.*;
 
 @Data
@@ -66,15 +89,19 @@ public class UserFilter {
   */
   @NativeQueryParam(value = "name", operator = NativeQueryOperator.CONTAINING)
   private String name;
+
 }
 ```
 
 > UserNativeQUery file example
 ```java
-import NativeQuery;
-import java.util.List;
-import org.springframework.data.domain.Pageable;
+import io.github.gasparbarancelli.NativeQuery;
+import io.github.gasparbarancelli.NativeQueryParam;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+
 
 public interface UserNativeQuery extends NativeQuery {
 
@@ -88,17 +115,17 @@ public interface UserNativeQuery extends NativeQuery {
   /*
     Add pagination
   */
-  List<UserTO> findActiveUsers(Pageagle pageable);
+  List<UserTO> findActiveUsers(Pageable pageable);
   
   /*
     Add pagination and return object with values for the pagination (count, page, size)
   */
-  Page<UserTO> findActiveUsersWithPage(Pageagle pageable);
+  Page<UserTO> findActiveUsersWithPage(Pageable pageable);
   
   /*
     Custom parameter name
   */
-  UserTO findUserById((@NativeQueryParam(value = "codigo") Number id);
+  UserTO findUserById(@NativeQueryParam(value = "codigo") Number id);
   
   List<Number> getUsersId();
   
@@ -109,52 +136,53 @@ public interface UserNativeQuery extends NativeQuery {
 
 > findUsers.twig file example
 ```sql
-SELECT id, name FROM USER
+SELECT cod as "id", full_name as "name" FROM USER
 ```
 
 > findUsersByFilter.twig file example, only add parameter when variables is not null
 ```sql
-SELECT id, name FROM USER
+SELECT cod as "id", full_name as "name" FROM USER
 WHERE 1=1
 /* if (filterId != null) */
-AND id = :filterId
+AND cod = :filterId
 /* endif  */
 /* if (filterName != null) */
-AND name like :filterName
+AND full_name like :filterName
 /* endif  */
 ```
 
 > findActiveUsers.twig file example
 ```sql
-SELECT id, name FROM USER WHERE ACTIVE = true
+SELECT cod as "id", full_name as "name" FROM USER WHERE ACTIVE = true
 ```
 
 > findActiveUsersWithPage.twig file example
 ```sql
-SELECT id, name FROM USER WHERE ACTIVE = true
+SELECT cod as "id", full_name as "name" FROM USER WHERE ACTIVE = true
 ```
 
 > findUserById.twig file example
 ```sql
-SELECT id, name FROM USER WHERE id = :codigo
+SELECT cod as "id", full_name as "name" FROM USER WHERE cod = :codigo
 ```
 
 > getUsersId file example
 ```sql
-SELECT id FROM USER
+SELECT cod as "id" FROM USER
 ```
 
-> getUserName file example
+> getUserName.twig file example
 ```sql
-SELECT name FROM USER WHERE id = :id
+SELECT full_name as "name" FROM USER WHERE cod = :id
 ```
 
 > UserController file example
 ```java
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -174,12 +202,16 @@ public class UserController {
   }
   
   @GetMapping("active")
-  public List<UserTO> findUsers(@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size", defaultValue = "0") int size) {
+  public List<UserTO> findUsers(
+          @RequestParam(value = "page", defaultValue = "0", required = false) int page,
+          @RequestParam(value = "size", defaultValue = "10", required = false) int size) {
     return userNativeQuery.findActiveUsers(PageRequest.of(page, size));
   }
   
   @GetMapping("activeWithPage")
-  public Page<UserTO> findActiveUsersWithPage(@RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size", defaultValue = "0") int size) {
+  public Page<UserTO> findActiveUsersWithPage(
+          @RequestParam(value = "page", defaultValue = "0", required = false) int page,
+          @RequestParam(value = "size", defaultValue = "5", required = false) int size) {
     return userNativeQuery.findActiveUsersWithPage(PageRequest.of(page, size));
   }
   
