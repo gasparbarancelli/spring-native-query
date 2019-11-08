@@ -6,14 +6,16 @@ import org.hibernate.transform.Transformers;
 import org.hibernate.type.LongType;
 import org.springframework.data.domain.PageImpl;
 
+import java.util.List;
+
 import javax.persistence.EntityManager;
 
 public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterceptor {
 
     @Override
     public Object executeQuery(NativeQueryInfo info) {
-        var entityManager = ApplicationContextProvider.getApplicationContext().getBean(EntityManager.class);
-        var session = entityManager.unwrap(Session.class);
+        EntityManager entityManager = ApplicationContextProvider.getApplicationContext().getBean(EntityManager.class);
+        Session session = entityManager.unwrap(Session.class);
         NativeQuery query;
         if (info.isEntity()) {
             query = session.createNativeQuery(info.getSql(), info.getAliasToBean());
@@ -38,7 +40,7 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
             return query.getSingleResult();
         }
 
-        var resultList = query.list();
+        List<?> resultList = query.list();
         if (info.isPagination()) {
             return new PageImpl(resultList, info.getPageable(), getTotalRecords(info, session));
         }

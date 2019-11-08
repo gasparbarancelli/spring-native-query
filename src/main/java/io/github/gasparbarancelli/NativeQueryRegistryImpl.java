@@ -1,5 +1,6 @@
 package io.github.gasparbarancelli;
 
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 
 import java.beans.Introspector;
@@ -19,9 +20,9 @@ public class NativeQueryRegistryImpl implements NativeQueryRegistry {
     @Override
     public void registry(Set<Class<? extends NativeQuery>> nimitzNativeQueryList) {
         for (Class<? extends NativeQuery> classe : nimitzNativeQueryList) {
-            var source = nativeQueryProxyFactory.create(classe);
-            var beanDefinition = NativeQueryBeanDefinition.of(classe, source);
-            var beanName = Introspector.decapitalize(classe.getSimpleName());
+            Object source = nativeQueryProxyFactory.create(classe);
+            AbstractBeanDefinition beanDefinition = NativeQueryBeanDefinition.of(classe, source);
+            String beanName = Introspector.decapitalize(classe.getSimpleName());
             registry.registerBeanDefinition(beanName, beanDefinition);
         }
     }

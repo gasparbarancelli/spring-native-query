@@ -20,7 +20,7 @@ class NativeQueryParameter {
     private Object value;
 
     static List<NativeQueryParameter> ofDeclaredMethods(String parentName, Class classe, Object object) {
-        var parameterList = new ArrayList<NativeQueryParameter>();
+        ArrayList<NativeQueryParameter> parameterList = new ArrayList<NativeQueryParameter>();
 
         @AllArgsConstructor
         class FieldInfo {
@@ -48,9 +48,9 @@ class NativeQueryParameter {
                 } catch (Exception ignore) {
                 }
 
-                var methodName = method.getName().substring(method.getName().startsWith("get") ? 3 : 2);
+                String methodName = method.getName().substring(method.getName().startsWith("get") ? 3 : 2);
 
-                var fieldInfo = mapField.get(methodName);
+                FieldInfo fieldInfo = mapField.get(methodName);
                 // todo implement ready method wihout field
                 if (fieldInfo != null) {
                     NativeQueryParam queryParam;
@@ -62,15 +62,15 @@ class NativeQueryParameter {
 
                     if (queryParam != null) {
                         if (queryParam.addChildren()) {
-                            var parentNameChildren = parentName + WordUtils.capitalize(queryParam.value());
+                            String parentNameChildren = parentName + WordUtils.capitalize(queryParam.value());
                             parameterList.addAll(ofDeclaredMethods(parentNameChildren, fieldInfo.type, value));
                         } else {
-                            var paramName = parentName + WordUtils.capitalize(queryParam.value());
-                            var paramValue = queryParam.operator().getTransformParam().apply(value);
+                            String paramName = parentName + WordUtils.capitalize(queryParam.value());
+                            Object paramValue = queryParam.operator().getTransformParam().apply(value);
                             parameterList.add(new NativeQueryParameter(paramName, paramValue));
                         }
                     } else {
-                        var paramValue = NativeQueryOperator.DEFAULT.getTransformParam().apply(value);
+                        Object paramValue = NativeQueryOperator.DEFAULT.getTransformParam().apply(value);
                         parameterList.add(new NativeQueryParameter(parentName + methodName, paramValue));
                     }
                 }

@@ -8,8 +8,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 
 import javax.persistence.Entity;
+
+import java.lang.reflect.Parameter;
 import java.util.*;
 
 @Getter
@@ -39,7 +42,7 @@ public class NativeQueryInfo {
     }
 
     public static NativeQueryInfo of(Class<? extends NativeQuery> classe, MethodInvocation invocation) {
-        var info = new NativeQueryInfo();
+        NativeQueryInfo info = new NativeQueryInfo();
 
         info.file = "nativeQuery/";
         if (classe.isAnnotationPresent(NativeQueryFolder.class)) {
@@ -63,13 +66,13 @@ public class NativeQueryInfo {
         info.parameterList = new ArrayList<>();
         info.pageable = null;
         for (int i = 0; i < invocation.getArguments().length; i++) {
-            var argument = invocation.getArguments()[i];
-            var parameter = invocation.getMethod().getParameters()[i];
+            Object argument = invocation.getArguments()[i];
+            Parameter parameter = invocation.getMethod().getParameters()[i];
             if (parameter.getType().isAssignableFrom(Pageable.class)) {
                 info.pageable = (Pageable) argument;
             } else {
                 if (parameter.isAnnotationPresent(NativeQueryParam.class)) {
-                    var param = parameter.getAnnotation(NativeQueryParam.class);
+                    NativeQueryParam param = parameter.getAnnotation(NativeQueryParam.class);
                     if (param.addChildren()) {
                         info.parameterList.addAll(NativeQueryParameter.ofDeclaredMethods(param.value(), parameter.getType(), argument));
                     } else {
@@ -84,7 +87,7 @@ public class NativeQueryInfo {
         info.returnType = invocation.getMethod().getReturnType();
         info.returnTypeIsIterable = Iterable.class.isAssignableFrom(info.returnType);
         if (info.returnTypeIsIterable) {
-            var componentType = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod()).getComponentType();
+            TypeInformation<?> componentType = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod()).getComponentType();
             info.aliasToBean = componentType.getType();
         } else {
             info.aliasToBean = info.returnType;
@@ -142,7 +145,7 @@ public class NativeQueryInfo {
     }
 
     boolean isJavaObject() {
-        return aliasToBean.getPackageName().startsWith("java");
+        return aliasToBean.getPackage().getName().startsWith("java");
     }
 
     boolean isPagination() {
