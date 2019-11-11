@@ -26,7 +26,7 @@ Here are some examples for a better understanding. Let's create a Spring Boot pr
 <dependency>
     <groupId>io.github.gasparbarancelli</groupId>
     <artifactId>spring-native-query</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```    
 
