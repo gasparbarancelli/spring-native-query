@@ -1,6 +1,5 @@
 package io.github.gasparbarancelli;
 
-import lombok.Getter;
 import org.aopalliance.intercept.MethodInvocation;
 import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
@@ -11,11 +10,9 @@ import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
 import javax.persistence.Entity;
-
 import java.lang.reflect.Parameter;
 import java.util.*;
 
-@Getter
 public class NativeQueryInfo {
 
     private String file;
@@ -172,4 +169,35 @@ public class NativeQueryInfo {
         return pageable.getPageSize();
     }
 
+    public String getFile() {
+        return this.file;
+    }
+
+    List<NativeQueryParameter> getParameterList() {
+        return this.parameterList;
+    }
+
+    Class<?> getAliasToBean() {
+        return this.aliasToBean;
+    }
+
+    Class<?> getReturnType() {
+        return this.returnType;
+    }
+
+    public boolean isReturnTypeIsIterable() {
+        return this.returnTypeIsIterable;
+    }
+
+    public Boolean getIsEntity() {
+        return this.isEntity;
+    }
+
+    public Map<String, String> getReplaceSql() {
+        return this.replaceSql;
+    }
+
+    public List<Class> getProcessorSqlList() {
+        return this.processorSqlList;
+    }
 }

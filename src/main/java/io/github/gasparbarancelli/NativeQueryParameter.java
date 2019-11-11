@@ -1,8 +1,6 @@
 package io.github.gasparbarancelli;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.text.WordUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -11,24 +9,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Getter
-@AllArgsConstructor
 class NativeQueryParameter {
 
     private String name;
 
     private Object value;
 
+    public NativeQueryParameter(String name, Object value) {
+        this.name = name;
+        this.value = value;
+    }
+
     static List<NativeQueryParameter> ofDeclaredMethods(String parentName, Class classe, Object object) {
         ArrayList<NativeQueryParameter> parameterList = new ArrayList<NativeQueryParameter>();
 
-        @AllArgsConstructor
         class FieldInfo {
 
             NativeQueryParam param;
 
             Class type;
 
+            public FieldInfo(NativeQueryParam param, Class type) {
+                this.param = param;
+                this.type = type;
+            }
         }
 
         Map<String, FieldInfo> mapField = new HashMap<>();
@@ -80,4 +84,11 @@ class NativeQueryParameter {
         return parameterList;
     }
 
+    public String getName() {
+        return this.name;
+    }
+
+    public Object getValue() {
+        return this.value;
+    }
 }
