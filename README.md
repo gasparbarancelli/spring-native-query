@@ -21,7 +21,8 @@ By default native query files must be added to a folder named "nativeQuery" insi
 
 Here are some examples for a better understanding. Let's create a Spring Boot project with dependence, Spring Data Jpa and the H2 database. When starting the project, let's create a sql script by creating a new table and inserting some records. All sample source code is in [github](https://github.com/gasparbarancelli/demo-spring-native-query).
 
-> In your project add the dependency of the library, let's take an example using maven.
+In your project add the dependency of the library, let's take an example using maven.
+
 ```
 <dependency>
     <groupId>io.github.gasparbarancelli</groupId>
@@ -234,5 +235,3 @@ public class UserController {
 
 }
 ```
-
-.
