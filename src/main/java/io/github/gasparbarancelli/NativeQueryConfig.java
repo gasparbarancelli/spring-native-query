@@ -22,9 +22,9 @@ public class NativeQueryConfig {
         return bf -> {
             BeanDefinitionRegistry beanDefinitionRegistry = (BeanDefinitionRegistry) bf;
             Reflections reflections = new Reflections(getPackageScan());
-            Set<Class<? extends NativeQuery>> nimitzNativeQueryList = reflections.getSubTypesOf(NativeQuery.class);
+            Set<Class<? extends NativeQuery>> nativeQueryList = reflections.getSubTypesOf(NativeQuery.class);
             NativeQueryRegistry nativeQueryRegistry = new NativeQueryRegistryImpl(beanDefinitionRegistry);
-            nativeQueryRegistry.registry(nimitzNativeQueryList);
+            nativeQueryRegistry.registry(nativeQueryList);
         };
     }
 

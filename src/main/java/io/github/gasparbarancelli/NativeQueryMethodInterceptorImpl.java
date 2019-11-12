@@ -16,7 +16,7 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
     public Object executeQuery(NativeQueryInfo info) {
         EntityManager entityManager = ApplicationContextProvider.getApplicationContext().getBean(EntityManager.class);
         Session session = entityManager.unwrap(Session.class);
-        NativeQuery query;
+        NativeQuery<?> query;
         if (info.isEntity()) {
             query = session.createNativeQuery(info.getSql(), info.getAliasToBean());
         } else {
@@ -48,13 +48,13 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
     }
 
     private Long getTotalRecords(NativeQueryInfo info, Session session) {
-        NativeQuery query = session.createNativeQuery(info.getSqlTotalRecord());
+        NativeQuery<?> query = session.createNativeQuery(info.getSqlTotalRecord());
         query.unwrap(NativeQuery.class).addScalar("totalRecords", LongType.INSTANCE);
         addParameter(query, info);
         return (Long) query.getSingleResult();
     }
 
-    private void addParameter(NativeQuery query, NativeQueryInfo info) {
+    private void addParameter(NativeQuery<?> query, NativeQueryInfo info) {
         info.getParameterList().forEach(p -> {
             if (p.getValue() != null && info.getSql().contains(":" + p.getName())) {
                 query.setParameter(p.getName(), p.getValue());

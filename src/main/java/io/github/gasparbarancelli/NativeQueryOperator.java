@@ -15,7 +15,7 @@ public enum NativeQueryOperator {
 
     private Function<Object, Object> transformParam;
 
-    NativeQueryOperator(Function transformParam) {
+    NativeQueryOperator(Function<Object, Object> transformParam) {
         this.transformParam = transformParam;
     }
 

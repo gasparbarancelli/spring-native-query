@@ -17,4 +17,5 @@ public class ApplicationContextProvider implements ApplicationContextAware {
     public void setApplicationContext(ApplicationContext ctx) {
         context = ctx;
     }
+
 }

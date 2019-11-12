@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
 public @interface NativeQueryReplaceSql {
 
     NativeQueryReplaceSqlParams[] values() default {};
-    Class[] processorParams() default {};
+
+    Class<ProcessorSql>[] processorParams() default {};
 
 }

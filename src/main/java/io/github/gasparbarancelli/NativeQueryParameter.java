@@ -20,16 +20,16 @@ class NativeQueryParameter {
         this.value = value;
     }
 
-    static List<NativeQueryParameter> ofDeclaredMethods(String parentName, Class classe, Object object) {
-        ArrayList<NativeQueryParameter> parameterList = new ArrayList<NativeQueryParameter>();
+    static List<NativeQueryParameter> ofDeclaredMethods(String parentName, Class<?> classe, Object object) {
+        ArrayList<NativeQueryParameter> parameterList = new ArrayList<>();
 
         class FieldInfo {
 
             NativeQueryParam param;
 
-            Class type;
+            Class<?> type;
 
-            public FieldInfo(NativeQueryParam param, Class type) {
+            public FieldInfo(NativeQueryParam param, Class<?> type) {
                 this.param = param;
                 this.type = type;
             }

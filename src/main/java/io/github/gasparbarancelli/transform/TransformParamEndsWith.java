@@ -2,7 +2,7 @@ package io.github.gasparbarancelli.transform;
 
 import java.util.function.Function;
 
-public class TransformParamEndsWith extends TransformParamString implements Function {
+public class TransformParamEndsWith extends TransformParamString implements Function<Object, Object> {
 
     @Override
     public Object apply(Object o) {
