@@ -21,7 +21,8 @@ By default native query files must be added to a folder named "nativeQuery" insi
 
 Here are some examples for a better understanding. Let's create a Spring Boot project with dependence, Spring Data Jpa and the H2 database. When starting the project, let's create a sql script by creating a new table and inserting some records. All sample source code is in [github](https://github.com/gasparbarancelli/demo-spring-native-query).
 
-> In your project add the dependency of the library, let's take an example using maven.
+In your project add the dependency of the library, let's take an example using maven.
+
 ```
 <dependency>
     <groupId>io.github.gasparbarancelli</groupId>
@@ -30,7 +31,8 @@ Here are some examples for a better understanding. Let's create a Spring Boot pr
 </dependency>
 ```    
 
-> Inside the resource folder create a file named data.sql and insert the script.
+Inside the resource folder create a file named data.sql and insert the script.
+
 ```sql
 CREATE TABLE USER (
   cod INT NOT NULL,
@@ -53,17 +55,20 @@ VALUES (1, 'Gaspar', 1),
 
 First define in your configuration file the package scan of your project, The files application.properties, bootstrap.yml and bootstrap.yaml are supported, the property.
 
-> If you use properties file
+If you use properties file
+
 ``` properties
 native-query.package-scan=io.github.gasparbarancelli.demospringnativequery
 ```
-> If you use yml file
+If you use yml file
+
 ``` yml
 native-query:
   package-scan: io.github.gasparbarancelli.demospringnativequery
 ```
 
-> UserTO file example
+UserTO file example
+
 ```java
 import lombok.*;
 
@@ -76,7 +81,8 @@ public class UserTO {
 }
 ```
 
-> UserTO file example
+UserTO file example
+
 ```java
 import io.github.gasparbarancelli.NativeQueryOperator;
 import io.github.gasparbarancelli.NativeQueryParam;
@@ -95,7 +101,8 @@ public class UserFilter {
 }
 ```
 
-> UserNativeQUery file example
+UserNativeQUery file example
+
 ```java
 import io.github.gasparbarancelli.NativeQuery;
 import io.github.gasparbarancelli.NativeQueryParam;
@@ -136,12 +143,14 @@ public interface UserNativeQuery extends NativeQuery {
 }
 ```
 
-> findUsers.twig file example
+findUsers.twig file example
+
 ```sql
 SELECT cod as "id", full_name as "name" FROM USER
 ```
 
-> findUsersByFilter.twig file example, only add parameter when variables is not null
+findUsersByFilter.twig file example, only add parameter when variables is not null
+
 ```sql
 SELECT cod as "id", full_name as "name" FROM USER
 WHERE 1=1
@@ -153,32 +162,38 @@ AND full_name like :filterName
 /* endif  */
 ```
 
-> findActiveUsers.twig file example
+findActiveUsers.twig file example
+
 ```sql
 SELECT cod as "id", full_name as "name" FROM USER WHERE ACTIVE = true
 ```
 
-> findActiveUsersWithPage.twig file example
+findActiveUsersWithPage.twig file example
+
 ```sql
 SELECT cod as "id", full_name as "name" FROM USER WHERE ACTIVE = true
 ```
 
-> findUserById.twig file example
+findUserById.twig file example
+
 ```sql
 SELECT cod as "id", full_name as "name" FROM USER WHERE cod = :codigo
 ```
 
-> getUsersId.twig file example
+getUsersId.twig file example
+
 ```sql
 SELECT cod as "id" FROM USER
 ```
 
-> getUserName.twig file example
+getUserName.twig file example
+
 ```sql
 SELECT full_name as "name" FROM USER WHERE cod = :id
 ```
 
-> UserController file example
+UserController file example
+
 ```java
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
