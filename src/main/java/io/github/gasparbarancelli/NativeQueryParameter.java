@@ -46,6 +46,20 @@ class NativeQueryParameter {
 
         for (Method method : classe.getDeclaredMethods()) {
             if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
+                String methodName = method.getName().substring(method.getName().startsWith("get") ? 3 : 2);
+
+                if (mapField.get(methodName) == null) {
+                    NativeQueryParam param = null;
+                    if (method.isAnnotationPresent(NativeQueryParam.class)) {
+                        param = method.getAnnotation(NativeQueryParam.class);
+                    }
+                    mapField.put(methodName, new FieldInfo(param, (Class) method.getAnnotatedReturnType().getType()));
+                }
+            }
+        }
+
+        for (Method method : classe.getDeclaredMethods()) {
+            if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
                 Object value = null;
                 try {
                     value = method.invoke(object);
@@ -55,7 +69,6 @@ class NativeQueryParameter {
                 String methodName = method.getName().substring(method.getName().startsWith("get") ? 3 : 2);
 
                 FieldInfo fieldInfo = mapField.get(methodName);
-                // todo implement ready method wihout field
                 if (fieldInfo != null) {
                     NativeQueryParam queryParam;
                     if (method.isAnnotationPresent(NativeQueryParam.class)) {
