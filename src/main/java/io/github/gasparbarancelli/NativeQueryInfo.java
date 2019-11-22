@@ -32,6 +32,10 @@ public class NativeQueryInfo {
 
     private Boolean isEntity;
 
+    private boolean useJdbcTemplate;
+
+    private boolean useTenant;
+
     private Map<String, String> replaceSql = new HashMap<>();
 
     private List<Class<ProcessorSql>> processorSqlList = new ArrayList<>();
@@ -47,6 +51,12 @@ public class NativeQueryInfo {
             info.file += classe.getAnnotation(NativeQueryFolder.class).value() + File.separator;
         }
         info.file += invocation.getMethod().getName() + ".twig";
+
+        info.useJdbcTemplate = invocation.getMethod().isAnnotationPresent(NativeQueryUseJdbcTemplate.class);
+        if (info.useJdbcTemplate) {
+            NativeQueryUseJdbcTemplate jdbcTemplate = invocation.getMethod().getAnnotation(NativeQueryUseJdbcTemplate.class);
+            info.useTenant = jdbcTemplate.useTenant();
+        }
 
         if (invocation.getMethod().isAnnotationPresent(NativeQueryReplaceSql.class)) {
             if (invocation.getMethod().getAnnotation(NativeQueryReplaceSql.class).values().length > 0) {
@@ -126,11 +136,22 @@ public class NativeQueryInfo {
                 sql += orderBuilder.toString();
             }
         }
+
+        if (useTenant) {
+            NativeQueryTenantNamedParameterJdbcTemplateInterceptor tenantJdbcTemplate = ApplicationContextProvider.getApplicationContext().getBean(NativeQueryTenantNamedParameterJdbcTemplateInterceptor.class);
+            sql = sql.replace(":SCHEMA", tenantJdbcTemplate.getTenant());
+
+        }
+
         return sql;
     }
 
     String getSqlTotalRecord() {
         return "select count(*) as totalRecords from (" + getSql() + ") x";
+    }
+
+    public boolean isUseJdbcTemplate() {
+        return useJdbcTemplate;
     }
 
     boolean isEntity() {

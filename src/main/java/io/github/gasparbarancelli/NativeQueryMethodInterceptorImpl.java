@@ -17,7 +17,7 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
 
     @Override
     public Object executeQuery(NativeQueryInfo info) {
-        if (info.hasPagination() || info.isEntity()) {
+        if (!info.isUseJdbcTemplate()) {
             EntityManager entityManager = ApplicationContextProvider.getApplicationContext().getBean(EntityManager.class);
             Session session = entityManager.unwrap(Session.class);
             NativeQuery<?> query;
@@ -33,6 +33,9 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
                 query.setFirstResult(info.getFirstResult());
                 query.setMaxResults(info.getMaxResult());
             }
+
+            query.getQueryString();
+
             if (!info.isJavaObject() && !info.isEntity()) {
                 query.setResultTransformer(Transformers.aliasToBean(info.getAliasToBean()));
             }
