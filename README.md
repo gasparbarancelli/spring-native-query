@@ -27,7 +27,7 @@ In your project add the dependency of the library, let's take an example using m
 <dependency>
     <groupId>io.github.gasparbarancelli</groupId>
     <artifactId>spring-native-query</artifactId>
-    <version>1.0.7</version>
+    <version>1.0.8</version>
 </dependency>
 ```    
 
@@ -59,13 +59,19 @@ If you use properties file
 
 ``` properties
 native-query.package-scan=io.github.gasparbarancelli.demospringnativequery
+native-query.file.sufix=sql
 ```
 If you use yml file
 
 ``` yml
 native-query:
   package-scan: io.github.gasparbarancelli.demospringnativequery
+  file:
+    sufix: sql
 ```
+
+| WARNING: By default the file extension containing sql is .twig but in the next version we will upgrade to .sql.! |
+| --- |
 
 UserTO file example
 
@@ -143,13 +149,13 @@ public interface UserNativeQuery extends NativeQuery {
 }
 ```
 
-findUsers.twig file example
+findUsers.sql file example
 
 ```sql
 SELECT cod as "id", full_name as "name" FROM USER
 ```
 
-findUsersByFilter.twig file example, only add parameter when variables is not null
+findUsersByFilter.sql file example, only add parameter when variables is not null
 
 ```sql
 SELECT cod as "id", full_name as "name" FROM USER
@@ -162,31 +168,31 @@ AND full_name like :filterName
 /* endif  */
 ```
 
-findActiveUsers.twig file example
+findActiveUsers.sql file example
 
 ```sql
 SELECT cod as "id", full_name as "name" FROM USER WHERE ACTIVE = true
 ```
 
-findActiveUsersWithPage.twig file example
+findActiveUsersWithPage.sql file example
 
 ```sql
 SELECT cod as "id", full_name as "name" FROM USER WHERE ACTIVE = true
 ```
 
-findUserById.twig file example
+findUserById.sql file example
 
 ```sql
 SELECT cod as "id", full_name as "name" FROM USER WHERE cod = :codigo
 ```
 
-getUsersId.twig file example
+getUsersId.sql file example
 
 ```sql
 SELECT cod as "id" FROM USER
 ```
 
-getUserName.twig file example
+getUserName.sql file example
 
 ```sql
 SELECT full_name as "name" FROM USER WHERE cod = :id
