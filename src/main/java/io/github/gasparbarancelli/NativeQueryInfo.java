@@ -50,7 +50,8 @@ public class NativeQueryInfo {
         if (classe.isAnnotationPresent(NativeQueryFolder.class)) {
             info.file += classe.getAnnotation(NativeQueryFolder.class).value() + File.separator;
         }
-        info.file += invocation.getMethod().getName() + ".twig";
+        String fileSufix = PropertyUtil.getValue("native-query.file.sufix", "twig");
+        info.file += invocation.getMethod().getName() + "." + fileSufix;
 
         info.useJdbcTemplate = invocation.getMethod().isAnnotationPresent(NativeQueryUseJdbcTemplate.class);
         if (info.useJdbcTemplate) {
