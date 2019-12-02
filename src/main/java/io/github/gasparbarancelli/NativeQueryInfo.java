@@ -162,7 +162,22 @@ public class NativeQueryInfo {
     }
 
     boolean isJavaObject() {
-        return aliasToBean.getPackage().getName().startsWith("java");
+        return getPackageName(aliasToBean).startsWith("java");
+    }
+
+    private String getPackageName(Class<?> c) {
+        final String pn;
+        while (c.isArray()) {
+            c = c.getComponentType();
+        }
+        if (c.isPrimitive()) {
+            pn = "java.lang";
+        } else {
+            String cn = c.getName();
+            int dot = cn.lastIndexOf('.');
+            pn = (dot != -1) ? cn.substring(0, dot).intern() : "";
+        }
+        return pn;
     }
 
     boolean isPagination() {
