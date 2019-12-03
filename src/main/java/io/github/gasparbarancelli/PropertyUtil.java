@@ -10,12 +10,19 @@ import java.util.Properties;
 
 public class PropertyUtil {
 
+    private static final Map<String, String> cache = new HashMap<>();
+
     public static String getValue(String propertyName, String defaultValue) {
         try {
+            String value = cache.get(propertyName);
+            if (value != null) {
+                return value;
+            }
+
             Properties prop = new Properties();
             InputStream inputStream = getInputStream("application.properties");
             prop.load(inputStream);
-            String value = prop.getProperty(propertyName);
+            value = prop.getProperty(propertyName);
             if (value == null || value.isEmpty()) {
                 ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
                 InputStream inputStreamYml = getInputStream("bootstrap.yaml");
@@ -27,8 +34,9 @@ public class PropertyUtil {
                 value = map.get(propertyName.replace("native-query.", ""));
             }
             if (value == null || value.isEmpty()) {
-                return defaultValue;
+                value = defaultValue;
             }
+            cache.put(propertyName, value);
             return value;
         } catch (Exception e) {
             return defaultValue;

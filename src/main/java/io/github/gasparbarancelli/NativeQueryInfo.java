@@ -3,6 +3,7 @@ package io.github.gasparbarancelli;
 import org.aopalliance.intercept.MethodInvocation;
 import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -46,12 +47,7 @@ public class NativeQueryInfo {
     public static NativeQueryInfo of(Class<? extends NativeQuery> classe, MethodInvocation invocation) {
         NativeQueryInfo info = new NativeQueryInfo();
 
-        info.file = "nativeQuery/";
-        if (classe.isAnnotationPresent(NativeQueryFolder.class)) {
-            info.file += classe.getAnnotation(NativeQueryFolder.class).value() + File.separator;
-        }
-        String fileSufix = PropertyUtil.getValue("native-query.file.sufix", "twig");
-        info.file += invocation.getMethod().getName() + "." + fileSufix;
+        setFile(classe, invocation, info);
 
         info.useJdbcTemplate = invocation.getMethod().isAnnotationPresent(NativeQueryUseJdbcTemplate.class);
         if (info.useJdbcTemplate) {
@@ -99,6 +95,24 @@ public class NativeQueryInfo {
         }
 
         return info;
+    }
+
+    private static void setFile(Class<? extends NativeQuery> classe, MethodInvocation invocation, NativeQueryInfo info) {
+        info.file = "nativeQuery/";
+        if (classe.isAnnotationPresent(NativeQueryFolder.class)) {
+            info.file += classe.getAnnotation(NativeQueryFolder.class).value() + File.separator;
+        }
+        info.file += invocation.getMethod().getName() + ".";
+        String fileSufix = PropertyUtil.getValue("native-query.file.sufix", "twig");
+
+        // backwards compatibility where the default extension was twig
+        if (new ClassPathResource(info.file + fileSufix).exists()) {
+            info.file += fileSufix;
+        } else if (new ClassPathResource(info.file + "sql").exists()) {
+            info.file += "sql";
+        } else {
+            info.file += "twig";
+        }
     }
 
     String getSql() {
