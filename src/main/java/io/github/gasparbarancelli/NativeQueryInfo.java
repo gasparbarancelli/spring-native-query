@@ -23,6 +23,8 @@ public class NativeQueryInfo {
 
     private Pageable pageable;
 
+    private Sort sort;
+
     private Class<?> aliasToBean;
 
     private Class<?> returnType;
@@ -71,6 +73,11 @@ public class NativeQueryInfo {
             Parameter parameter = invocation.getMethod().getParameters()[i];
             if (parameter.getType().isAssignableFrom(Pageable.class)) {
                 info.pageable = (Pageable) argument;
+                if (info.sort == null) {
+                    info.sort = info.pageable.getSort();
+                }
+            } else if (parameter.getType().isAssignableFrom(Sort.class)) {
+                info.sort = (Sort) argument;
             } else {
                 if (parameter.isAnnotationPresent(NativeQueryParam.class)) {
                     NativeQueryParam param = parameter.getAnnotation(NativeQueryParam.class);
@@ -135,9 +142,9 @@ public class NativeQueryInfo {
                 sql = sql.replaceAll("\\$\\{"+replaceSqlEntry.getKey()+"}", replaceSqlEntry.getValue());
             }
 
-            if (pageable != null) {
+            if (sort != null) {
                 StringBuilder orderBuilder = new StringBuilder();
-                for (Sort.Order order : pageable.getSort()) {
+                for (Sort.Order order : sort) {
                     if (orderBuilder.length() == 0) {
                         orderBuilder.append(" ORDER BY ");
                     } else {

@@ -27,7 +27,7 @@ In your project add the dependency of the library, let's take an example using m
 <dependency>
     <groupId>io.github.gasparbarancelli</groupId>
     <artifactId>spring-native-query</artifactId>
-    <version>1.0.9</version>
+    <version>1.0.10</version>
 </dependency>
 ```    
 
@@ -70,9 +70,6 @@ native-query:
     sufix: sql
 ```
 
-| WARNING: By default the file extension containing sql is .twig but in the next version we will upgrade to .sql.! |
-| --- |
-
 UserTO file example
 
 ```java
@@ -114,6 +111,7 @@ import io.github.gasparbarancelli.NativeQuery;
 import io.github.gasparbarancelli.NativeQueryParam;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -131,7 +129,12 @@ public interface UserNativeQuery extends NativeQuery {
     Add pagination
   */
   List<UserTO> findActiveUsers(Pageable pageable);
-  
+
+  /*
+    Ordering
+  */
+  List<UserTO> findActiveUsersWithSort(Sort sort);
+
   /*
     Add pagination and return object with values for the pagination (count, page, size)
   */
@@ -180,6 +183,12 @@ findActiveUsersWithPage.sql file example
 SELECT cod as "id", full_name as "name" FROM USER WHERE ACTIVE = true
 ```
 
+findActiveUsersWithSort.sql file example
+
+```sql
+SELECT cod as "id", full_name as "name" FROM USER WHERE ACTIVE = true
+```
+
 findUserById.sql file example
 
 ```sql
@@ -204,6 +213,7 @@ UserController file example
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -237,6 +247,13 @@ public class UserController {
           @RequestParam(value = "size", defaultValue = "5", required = false) int size) {
     return userNativeQuery.findActiveUsersWithPage(PageRequest.of(page, size));
   }
+ 
+  @GetMapping("activeWithSort")
+  public Page<UserTO> findActiveUsersWithPage(
+        @RequestParam(value = "columnName") String columnName) {
+    return userNativeQuery.findActiveUsersWithSort(Sort.by(columnName));
+  }
+
   
   @GetMapping("{id}")
   public UserTO findUsers(@PathVariable("id") Number id) {
