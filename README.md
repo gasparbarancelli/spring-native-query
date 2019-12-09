@@ -249,7 +249,7 @@ public class UserController {
   }
  
   @GetMapping("activeWithSort")
-  public Page<UserTO> findActiveUsersWithPage(
+  public List<UserTO> findActiveUsersWithSort(
         @RequestParam(value = "columnName") String columnName) {
     return userNativeQuery.findActiveUsersWithSort(Sort.by(columnName));
   }
