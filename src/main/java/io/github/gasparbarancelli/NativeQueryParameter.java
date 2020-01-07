@@ -4,6 +4,7 @@ import org.apache.commons.text.WordUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +54,13 @@ class NativeQueryParameter {
                     if (method.isAnnotationPresent(NativeQueryParam.class)) {
                         param = method.getAnnotation(NativeQueryParam.class);
                     }
-                    mapField.put(methodName, new FieldInfo(param, (Class) method.getAnnotatedReturnType().getType()));
+                    Class<?> type;
+                    if (method.getAnnotatedReturnType().getType() instanceof ParameterizedType) {
+                        type = (Class<?>) ((ParameterizedType) method.getAnnotatedReturnType().getType()).getRawType();
+                    } else {
+                        type = (Class<?>) method.getAnnotatedReturnType().getType();
+                    }
+                    mapField.put(methodName, new FieldInfo(param, type));
                 }
             }
         }
