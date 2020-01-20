@@ -11,6 +11,8 @@ public class PropertyUtil {
 
     private static final Map<String, String> cache = new HashMap<>();
 
+    private static final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+
     private static final List<String> yamlFileList = Arrays.asList(
             "application.yaml", "application.yml", "bootstrap.yaml", "bootstrap.yml"
     );
@@ -35,61 +37,54 @@ public class PropertyUtil {
         }
     }
 
-    private static String getProperty(String propertyName,  String defaultValue) throws IOException {
-        String value = getPropertyValue(propertyName);
-        if (value == null || value.isEmpty()) {
-            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-            value = getYamlValue(propertyName, mapper);
-        }
-        if (value == null || value.isEmpty()) {
-            value = defaultValue;
-        }
-
-        return value;
+    private static String getProperty(String propertyName, String defaultValue) throws IOException {
+        return getPropertyValue(propertyName)
+                .orElse(getYamlValue(propertyName).orElse(defaultValue));
     }
 
-    private static String getPropertyValue(InputStream inputStream, String propertyName) throws IOException {
+    private static Optional<String> getPropertyValue(InputStream inputStream, String propertyName) throws IOException {
         Properties prop = new Properties();
         prop.load(inputStream);
-        return prop.getProperty(propertyName);
+        return Optional.ofNullable(prop.getProperty(propertyName));
     }
 
-    private static String getPropertyValue(String propertyName) throws IOException {
+    private static Optional<String> getPropertyValue(String propertyName) throws IOException {
         for (String propertyFile : propertyFileList) {
-            InputStream inputStreamYml = getInputStream(propertyFile);
-            if (inputStreamYml != null) {
-                String value = getPropertyValue(inputStreamYml, propertyName);
-                if (value != null) {
+            Optional<InputStream> inputStreamYml = getInputStream(propertyFile);
+            if (inputStreamYml.isPresent()) {
+                Optional<String> value = getPropertyValue(inputStreamYml.get(), propertyName);
+                if (value.isPresent()) {
                     return value;
                 }
             }
         }
-        return null;
+        return Optional.empty();
     }
 
-    private static String getYamlValue(InputStream inputStreamYml, String propertyName, ObjectMapper mapper) throws java.io.IOException {
+    private static Optional<String> getYamlValue(InputStream inputStreamYml, String propertyName) throws java.io.IOException {
         Map<String, Object> obj = mapper.readValue(inputStreamYml, HashMap.class);
         Map<String, String> map = (HashMap<String, String>) obj.get("native-query");
-        return map.get(propertyName.replace("native-query.", ""));
+        return Optional.ofNullable(map.get(propertyName.replace("native-query.", "")));
     }
 
-    private static String getYamlValue(String propertyName, ObjectMapper mapper) throws java.io.IOException {
+    private static Optional<String> getYamlValue(String propertyName) throws java.io.IOException {
         for (String file : yamlFileList) {
-            InputStream inputStreamYml = getInputStream(file);
-            if (inputStreamYml != null) {
-                String value = getYamlValue(inputStreamYml, propertyName, mapper);
-                if (value != null) {
+            Optional<InputStream> inputStreamYml = getInputStream(file);
+            if (inputStreamYml.isPresent()) {
+                Optional<String> value = getYamlValue(inputStreamYml.get(), propertyName);
+                if (value.isPresent()) {
                     return value;
                 }
             }
         }
-        return null;
+        return Optional.empty();
     }
 
-    private static InputStream getInputStream(String s) {
-        return PropertyUtil.class
+    private static Optional<InputStream> getInputStream(String s) {
+        InputStream inputStream = PropertyUtil.class
                 .getClassLoader()
                 .getResourceAsStream(s);
+        return Optional.ofNullable(inputStream);
     }
 
 }
