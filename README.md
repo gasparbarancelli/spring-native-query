@@ -27,7 +27,7 @@ In your project add the dependency of the library, let's take an example using m
 <dependency>
     <groupId>io.github.gasparbarancelli</groupId>
     <artifactId>spring-native-query</artifactId>
-    <version>1.0.13</version>
+    <version>1.0.14</version>
 </dependency>
 ```    
 
@@ -119,6 +119,8 @@ import java.util.List;
 public interface UserNativeQuery extends NativeQuery {
 
   List<UserTO> findUsers();
+
+  List<UserTO> findWithMap(Map<String, Object> params);
   
   /*
     Add fields children of parameter
@@ -157,6 +159,17 @@ findUsers.sql file example
 ```sql
 SELECT cod as "id", full_name as "name" FROM USER
 ```
+
+findWithMap.sql file example
+
+```sql
+SELECT cod as "id", full_name as "name" FROM USER
+WHERE 1=1
+/* for item in params */
+AND {{item}} = :{{item}}
+/* endfor */
+```
+
 
 findUsersByFilter.sql file example, only add parameter when variables is not null
 
@@ -229,6 +242,14 @@ public class UserController {
     return userNativeQuery.findUsers();
   }
   
+  @GetMapping("map")
+  public List<UserTO> findWithMap() {
+    Map<String, Object> map = new HashMap<>();
+    map.put("cod", 1);
+    map.put("full_name", "Gaspar");
+    return userNativeQuery.findWithMap(map);
+  }
+
   @PostMapping("filter")
   public List<UserTO> findUsers(@RequestBody UserFilter filter) {
     return userNativeQuery.findUsersByFilter(filter);

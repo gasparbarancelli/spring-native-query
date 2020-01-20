@@ -90,17 +90,32 @@ class NativeQueryParameter {
                             parameterList.addAll(ofDeclaredMethods(parentNameChildren, fieldInfo.type, value));
                         } else {
                             String paramName = parentName + WordUtils.capitalize(queryParam.value());
-                            Object paramValue = queryParam.operator().getTransformParam().apply(value);
-                            parameterList.add(new NativeQueryParameter(paramName, paramValue));
+                            if (value instanceof Map) {
+                                parameterList.addAll(ofMap((Map) value, paramName));
+                            } else {
+                                Object paramValue = queryParam.operator().getTransformParam().apply(value);
+                                parameterList.add(new NativeQueryParameter(paramName, paramValue));
+                            }
                         }
                     } else {
-                        Object paramValue = NativeQueryOperator.DEFAULT.getTransformParam().apply(value);
-                        parameterList.add(new NativeQueryParameter(parentName + methodName, paramValue));
+                        if (value instanceof Map) {
+                            parameterList.addAll(ofMap((Map) value, parentName + methodName));
+                        } else {
+                            Object paramValue = NativeQueryOperator.DEFAULT.getTransformParam().apply(value);
+                            parameterList.add(new NativeQueryParameter(parentName + methodName, paramValue));
+                        }
                     }
                 }
             }
         }
 
+        return parameterList;
+    }
+
+    static List<NativeQueryParameter> ofMap(Map map, String name) {
+        ArrayList<NativeQueryParameter> parameterList = new ArrayList<>();
+        parameterList.add(new NativeQueryParameter(name, map.keySet()));
+        map.forEach((k, v) -> parameterList.add(new NativeQueryParameter(k.toString(), v)));
         return parameterList;
     }
 

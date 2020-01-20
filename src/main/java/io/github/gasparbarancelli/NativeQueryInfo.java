@@ -84,10 +84,18 @@ public class NativeQueryInfo {
                     if (param.addChildren()) {
                         info.parameterList.addAll(NativeQueryParameter.ofDeclaredMethods(param.value(), parameter.getType(), argument));
                     } else {
-                        info.parameterList.add(new NativeQueryParameter(param.value(), param.operator().getTransformParam().apply(argument)));
+                        if (argument instanceof Map) {
+                            info.parameterList.addAll(NativeQueryParameter.ofMap((Map) argument, param.value()));
+                        } else {
+                            info.parameterList.add(new NativeQueryParameter(param.value(), param.operator().getTransformParam().apply(argument)));
+                        }
                     }
                 } else {
-                    info.parameterList.add(new NativeQueryParameter(parameter.getName(), argument));
+                    if (argument instanceof Map) {
+                        info.parameterList.addAll(NativeQueryParameter.ofMap((Map) argument, parameter.getName()));
+                    } else {
+                        info.parameterList.add(new NativeQueryParameter(parameter.getName(), argument));
+                    }
                 }
             }
         }
