@@ -36,6 +36,6 @@ main tree or given feedback for changes that would be required.
 
 ## Conduct
 
-We follow the [Eclipse Code of Conduct](https://www.eclipse.org/org/documents/Community_Code_of_Conduct.php).
+We follow the [Code of Conduct](https://github.com/gasparbarancelli/spring-native-query/blob/master/CODE_OF_CONDUCT.md).
 
 All code in this repository is under the MIT License.
