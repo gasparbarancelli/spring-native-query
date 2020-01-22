@@ -27,7 +27,7 @@ In your project add the dependency of the library, let's take an example using m
 <dependency>
     <groupId>io.github.gasparbarancelli</groupId>
     <artifactId>spring-native-query</artifactId>
-    <version>1.0.14</version>
+    <version>1.0.15</version>
 </dependency>
 ```    
 
@@ -53,7 +53,7 @@ VALUES (1, 'Gaspar', 1),
        (9, 'Rafael', 0);
 ```
 
-First define in your configuration file the package scan of your project, The files application.properties, bootstrap.yml and bootstrap.yaml are supported, the property.
+First define in your configuration file the package scan of your project, The files application.properties, bootstrap.properties, application.yaml, application.yml, bootstrap.yml and bootstrap.yaml are supported, the property.
 
 If you use properties file
 
@@ -68,6 +68,26 @@ native-query:
   package-scan: io.github.gasparbarancelli.demospringnativequery
   file:
     sufix: sql
+```
+
+We can also define programatically implementing the interface NativeQueryConfig.
+
+``` java
+import io.github.gasparbarancelli.NativeQueryConfig;
+
+public class NativeQueryDefaultConfig implements NativeQueryConfig {
+
+    @Override
+    public String getPackageScan() {
+        return "io.github.gasparbarancelli.demospringnativequery";
+    }
+
+    @Override
+    public String getFileSufix() {
+        return "sql";
+    }
+
+}
 ```
 
 UserTO file example
