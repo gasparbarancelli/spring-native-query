@@ -1,2 +1,2 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=io.github.gasparbarancelli.NativeQueryConfig,\
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=io.github.gasparbarancelli.NativeQueryAutoConfiguration,\
   io.github.gasparbarancelli.ApplicationContextProvider

@@ -2,6 +2,7 @@ package io.github.gasparbarancelli;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.reflections.Reflections;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,9 +38,29 @@ public class PropertyUtil {
         }
     }
 
+    private static Optional<String> getPropertyByConfig(String propertyName) {
+        String mainClass = System.getProperty("sun.java.command");
+        String packageMainClass = mainClass.substring(0, mainClass.lastIndexOf("."));
+        Reflections reflections = new Reflections(packageMainClass);
+        Set<Class<? extends NativeQueryConfig>> subTypesOfNativeQueryConfig = reflections.getSubTypesOf(NativeQueryConfig.class);
+        for (Class<? extends NativeQueryConfig> subType : subTypesOfNativeQueryConfig) {
+            try {
+                NativeQueryConfig config = (NativeQueryConfig) subType.getConstructors()[0].newInstance();
+                if ("native-query.package-scan".equals(propertyName)) {
+                    return Optional.ofNullable(config.getPackageScan());
+                } else {
+                    return Optional.ofNullable(config.getFileSufix());
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return Optional.empty();
+    }
+
     private static String getProperty(String propertyName, String defaultValue) throws IOException {
         return getPropertyValue(propertyName)
-                .orElse(getYamlValue(propertyName).orElse(defaultValue));
+                .orElse(getYamlValue(propertyName).orElse(getPropertyByConfig(propertyName).orElse(defaultValue)));
     }
 
     private static Optional<String> getPropertyValue(InputStream inputStream, String propertyName) throws IOException {
