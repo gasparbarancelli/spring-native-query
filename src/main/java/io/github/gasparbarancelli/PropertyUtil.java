@@ -85,7 +85,10 @@ public class PropertyUtil {
     private static Optional<String> getYamlValue(InputStream inputStreamYml, String propertyName) throws java.io.IOException {
         Map<String, Object> obj = mapper.readValue(inputStreamYml, HashMap.class);
         Map<String, String> map = (HashMap<String, String>) obj.get("native-query");
-        return Optional.ofNullable(map.get(propertyName.replace("native-query.", "")));
+        if (map != null) {
+            return Optional.ofNullable(map.get(propertyName.replace("native-query.", "")));
+        }
+        return Optional.empty();
     }
 
     private static Optional<String> getYamlValue(String propertyName) throws java.io.IOException {
