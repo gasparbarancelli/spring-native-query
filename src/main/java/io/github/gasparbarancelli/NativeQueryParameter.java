@@ -2,19 +2,16 @@ package io.github.gasparbarancelli;
 
 import org.apache.commons.text.WordUtils;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 class NativeQueryParameter {
 
-    private String name;
+    private final String name;
 
-    private Object value;
+    private final Object value;
 
     public NativeQueryParameter(String name, Object value) {
         this.name = name;
@@ -24,92 +21,47 @@ class NativeQueryParameter {
     static List<NativeQueryParameter> ofDeclaredMethods(String parentName, Class<?> classe, Object object) {
         ArrayList<NativeQueryParameter> parameterList = new ArrayList<>();
 
-        class FieldInfo {
+        Map<String, NativeQueryFieldInfo> fieldInfoMap = NativeQueryCache.getFieldInfo(classe);
+        List<NativeQueryAccessMethod> accessMethods = NativeQueryCache.getAccessMethods(classe);
+        for (NativeQueryAccessMethod accessMethod : accessMethods) {
+            Object value = getValue(object, accessMethod.getMethod());
 
-            NativeQueryParam param;
-
-            Class<?> type;
-
-            public FieldInfo(NativeQueryParam param, Class<?> type) {
-                this.param = param;
-                this.type = type;
-            }
-        }
-
-        Map<String, FieldInfo> mapField = new HashMap<>();
-        for (Field field : classe.getDeclaredFields()) {
-            NativeQueryParam param = null;
-            if (field.isAnnotationPresent(NativeQueryParam.class)) {
-                param = field.getAnnotation(NativeQueryParam.class);
-            }
-            mapField.put(WordUtils.capitalize(field.getName()), new FieldInfo(param, field.getType()));
-        }
-
-        for (Method method : classe.getDeclaredMethods()) {
-            if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
-                String methodName = method.getName().substring(method.getName().startsWith("get") ? 3 : 2);
-
-                if (mapField.get(methodName) == null) {
-                    NativeQueryParam param = null;
-                    if (method.isAnnotationPresent(NativeQueryParam.class)) {
-                        param = method.getAnnotation(NativeQueryParam.class);
-                    }
-                    Class<?> type;
-                    if (method.getAnnotatedReturnType().getType() instanceof ParameterizedType) {
-                        type = (Class<?>) ((ParameterizedType) method.getAnnotatedReturnType().getType()).getRawType();
+            NativeQueryFieldInfo fieldInfo = fieldInfoMap.get(accessMethod.getName());
+            if (fieldInfo != null) {
+                NativeQueryParam queryParam = accessMethod.getParam();
+                if (accessMethod.paramIsPresent()) {
+                    if (queryParam.addChildren()) {
+                        String parentNameChildren = parentName + WordUtils.capitalize(queryParam.value());
+                        parameterList.addAll(ofDeclaredMethods(parentNameChildren, fieldInfo.getType(), value));
                     } else {
-                        type = (Class<?>) method.getAnnotatedReturnType().getType();
-                    }
-                    mapField.put(methodName, new FieldInfo(param, type));
-                }
-            }
-        }
-
-        for (Method method : classe.getDeclaredMethods()) {
-            if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
-                Object value = null;
-                try {
-                    value = method.invoke(object);
-                } catch (Exception ignore) {
-                }
-
-                String methodName = method.getName().substring(method.getName().startsWith("get") ? 3 : 2);
-
-                FieldInfo fieldInfo = mapField.get(methodName);
-                if (fieldInfo != null) {
-                    NativeQueryParam queryParam;
-                    if (method.isAnnotationPresent(NativeQueryParam.class)) {
-                        queryParam = method.getAnnotation(NativeQueryParam.class);
-                    } else {
-                        queryParam = fieldInfo.param;
-                    }
-
-                    if (queryParam != null) {
-                        if (queryParam.addChildren()) {
-                            String parentNameChildren = parentName + WordUtils.capitalize(queryParam.value());
-                            parameterList.addAll(ofDeclaredMethods(parentNameChildren, fieldInfo.type, value));
-                        } else {
-                            String paramName = parentName + WordUtils.capitalize(queryParam.value());
-                            if (value instanceof Map) {
-                                parameterList.addAll(ofMap((Map) value, paramName));
-                            } else {
-                                Object paramValue = queryParam.operator().getTransformParam().apply(value);
-                                parameterList.add(new NativeQueryParameter(paramName, paramValue));
-                            }
-                        }
-                    } else {
+                        String paramName = parentName + WordUtils.capitalize(queryParam.value());
                         if (value instanceof Map) {
-                            parameterList.addAll(ofMap((Map) value, parentName + methodName));
+                            parameterList.addAll(ofMap((Map) value, paramName));
                         } else {
-                            Object paramValue = NativeQueryOperator.DEFAULT.getTransformParam().apply(value);
-                            parameterList.add(new NativeQueryParameter(parentName + methodName, paramValue));
+                            Object paramValue = queryParam.operator().getTransformParam().apply(value);
+                            parameterList.add(new NativeQueryParameter(paramName, paramValue));
                         }
+                    }
+                } else {
+                    if (value instanceof Map) {
+                        parameterList.addAll(ofMap((Map) value, parentName + accessMethod.getName()));
+                    } else {
+                        Object paramValue = NativeQueryOperator.DEFAULT.getTransformParam().apply(value);
+                        parameterList.add(new NativeQueryParameter(parentName + accessMethod.getName(), paramValue));
                     }
                 }
             }
         }
 
         return parameterList;
+    }
+
+    private static Object getValue(Object object, Method method) {
+        try {
+            return method.invoke(object);
+        } catch (Exception ignore) {
+            return null;
+        }
     }
 
     static List<NativeQueryParameter> ofMap(Map map, String name) {
@@ -126,4 +78,5 @@ class NativeQueryParameter {
     public Object getValue() {
         return this.value;
     }
+
 }

@@ -39,9 +39,9 @@ public class NativeQueryInfo {
 
     private boolean useTenant;
 
-    private Map<String, String> replaceSql = new HashMap<>();
+    private final Map<String, String> replaceSql = new HashMap<>();
 
-    private List<Class<ProcessorSql>> processorSqlList = new ArrayList<>();
+    private final List<Class<ProcessorSql>> processorSqlList = new ArrayList<>();
 
     private NativeQueryInfo() {
     }
@@ -66,6 +66,20 @@ public class NativeQueryInfo {
             }
         }
 
+        info.returnType = invocation.getMethod().getReturnType();
+        info.returnTypeIsIterable = Iterable.class.isAssignableFrom(info.returnType);
+        if (info.returnTypeIsIterable) {
+            TypeInformation<?> componentType = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod()).getComponentType();
+            info.aliasToBean = Objects.requireNonNull(componentType).getType();
+        } else {
+            info.aliasToBean = info.returnType;
+        }
+
+        return info;
+    }
+
+    public static void setParameters(NativeQueryInfo info, MethodInvocation invocation) {
+        info.sql = null;
         info.parameterList = new ArrayList<>();
         info.pageable = null;
         for (int i = 0; i < invocation.getArguments().length; i++) {
@@ -99,17 +113,6 @@ public class NativeQueryInfo {
                 }
             }
         }
-
-        info.returnType = invocation.getMethod().getReturnType();
-        info.returnTypeIsIterable = Iterable.class.isAssignableFrom(info.returnType);
-        if (info.returnTypeIsIterable) {
-            TypeInformation<?> componentType = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod()).getComponentType();
-            info.aliasToBean = Objects.requireNonNull(componentType).getType();
-        } else {
-            info.aliasToBean = info.returnType;
-        }
-
-        return info;
     }
 
     private static void setFile(Class<? extends NativeQuery> classe, MethodInvocation invocation, NativeQueryInfo info) {
@@ -165,12 +168,11 @@ public class NativeQueryInfo {
 
                 sql += orderBuilder.toString();
             }
-        }
 
-        if (useTenant) {
-            NativeQueryTenantNamedParameterJdbcTemplateInterceptor tenantJdbcTemplate = ApplicationContextProvider.getApplicationContext().getBean(NativeQueryTenantNamedParameterJdbcTemplateInterceptor.class);
-            sql = sql.replace(":SCHEMA", tenantJdbcTemplate.getTenant());
-
+            if (useTenant) {
+                NativeQueryTenantNamedParameterJdbcTemplateInterceptor tenantJdbcTemplate = ApplicationContextProvider.getApplicationContext().getBean(NativeQueryTenantNamedParameterJdbcTemplateInterceptor.class);
+                sql = sql.replace(":SCHEMA", tenantJdbcTemplate.getTenant());
+            }
         }
 
         return sql;

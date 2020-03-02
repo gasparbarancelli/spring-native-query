@@ -18,68 +18,75 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
     @Override
     public Object executeQuery(NativeQueryInfo info) {
         if (!info.isUseJdbcTemplate()) {
-            EntityManager entityManager = ApplicationContextProvider.getApplicationContext().getBean(EntityManager.class);
-            Session session = entityManager.unwrap(Session.class);
-            NativeQuery<?> query;
-            if (info.isEntity()) {
-                query = session.createNativeQuery(info.getSql(), info.getAliasToBean());
-            } else {
-                query = session.createNativeQuery(info.getSql());
-            }
-
-            addParameterJpa(query, info);
-
-            if (info.hasPagination()) {
-                query.setFirstResult(info.getFirstResult());
-                query.setMaxResults(info.getMaxResult());
-            }
-
-            query.getQueryString();
-
-            if (!info.isJavaObject() && !info.isEntity()) {
-                query.setResultTransformer(Transformers.aliasToBean(info.getAliasToBean()));
-            }
-            if (info.getReturnType().getSimpleName().equals(Void.TYPE.getName())) {
-                query.executeUpdate();
-                return null;
-            }
-            if (info.isSingleResult()) {
-                return query.getSingleResult();
-            }
-
-            List<?> resultList = query.list();
-            if (info.isPagination()) {
-                return new PageImpl(resultList, info.getPageable(), getTotalRecords(info, session));
-            }
-            return resultList;
-        } else {
-            NamedParameterJdbcTemplate jdbcTemplate = ApplicationContextProvider.getApplicationContext().getBean(NamedParameterJdbcTemplate.class);
-
-            Map<String, Object> parametroList = new HashMap<>();
-            for (NativeQueryParameter parametro : info.getParameterList()) {
-                if (parametro.getValue() != null && info.getSql().contains(":" + parametro.getName())) {
-                    parametroList.put(parametro.getName(), parametro.getValue());
-                }
-            }
-
-            BeanPropertyRowMapper<?> beanPropertyRowMapper = new BeanPropertyRowMapper<>(info.getAliasToBean());
-            if (info.getReturnType().getSimpleName().equals(Void.TYPE.getName())) {
-                jdbcTemplate.update(info.getSql(), parametroList);
-                return null;
-            }
-
-            if (info.isSingleResult()) {
-                if (info.isJavaObject()) {
-                    return jdbcTemplate.queryForObject(info.getSql(), parametroList, info.getAliasToBean());
-                }
-                return jdbcTemplate.queryForObject(info.getSql(), parametroList, beanPropertyRowMapper);
-            }
-
-            if (info.isJavaObject()) {
-                return jdbcTemplate.queryForList(info.getSql(), parametroList, info.getAliasToBean());
-            }
-            return jdbcTemplate.query(info.getSql(), parametroList, beanPropertyRowMapper);
+            return executeWithEntityManager(info);
         }
+        return executeWithJdbcTemplate(info);
+    }
+
+    private Object executeWithJdbcTemplate(NativeQueryInfo info) {
+        NamedParameterJdbcTemplate jdbcTemplate = ApplicationContextProvider.getApplicationContext().getBean(NamedParameterJdbcTemplate.class);
+
+        Map<String, Object> parametroList = new HashMap<>();
+        for (NativeQueryParameter parametro : info.getParameterList()) {
+            if (parametro.getValue() != null && info.getSql().contains(":" + parametro.getName())) {
+                parametroList.put(parametro.getName(), parametro.getValue());
+            }
+        }
+
+        BeanPropertyRowMapper<?> beanPropertyRowMapper = new BeanPropertyRowMapper<>(info.getAliasToBean());
+        if (info.getReturnType().getSimpleName().equals(Void.TYPE.getName())) {
+            jdbcTemplate.update(info.getSql(), parametroList);
+            return null;
+        }
+
+        if (info.isSingleResult()) {
+            if (info.isJavaObject()) {
+                return jdbcTemplate.queryForObject(info.getSql(), parametroList, info.getAliasToBean());
+            }
+            return jdbcTemplate.queryForObject(info.getSql(), parametroList, beanPropertyRowMapper);
+        }
+
+        if (info.isJavaObject()) {
+            return jdbcTemplate.queryForList(info.getSql(), parametroList, info.getAliasToBean());
+        }
+        return jdbcTemplate.query(info.getSql(), parametroList, beanPropertyRowMapper);
+    }
+
+    private Object executeWithEntityManager(NativeQueryInfo info) {
+        EntityManager entityManager = ApplicationContextProvider.getApplicationContext().getBean(EntityManager.class);
+        Session session = entityManager.unwrap(Session.class);
+        NativeQuery<?> query;
+        if (info.isEntity()) {
+            query = session.createNativeQuery(info.getSql(), info.getAliasToBean());
+        } else {
+            query = session.createNativeQuery(info.getSql());
+        }
+
+        addParameterJpa(query, info);
+
+        if (info.hasPagination()) {
+            query.setFirstResult(info.getFirstResult());
+            query.setMaxResults(info.getMaxResult());
+        }
+
+        query.getQueryString();
+
+        if (!info.isJavaObject() && !info.isEntity()) {
+            query.setResultTransformer(Transformers.aliasToBean(info.getAliasToBean()));
+        }
+        if (info.getReturnType().getSimpleName().equals(Void.TYPE.getName())) {
+            query.executeUpdate();
+            return null;
+        }
+        if (info.isSingleResult()) {
+            return query.getSingleResult();
+        }
+
+        List<?> resultList = query.list();
+        if (info.isPagination()) {
+            return new PageImpl(resultList, info.getPageable(), getTotalRecords(info, session));
+        }
+        return resultList;
     }
 
     private Long getTotalRecords(NativeQueryInfo info, Session session) {
