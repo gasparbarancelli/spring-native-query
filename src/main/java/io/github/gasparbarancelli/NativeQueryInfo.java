@@ -33,6 +33,10 @@ public class NativeQueryInfo {
 
     private String sql;
 
+    private String sqlInline;
+
+    private boolean useSqlInline;
+
     private Boolean isEntity;
 
     private boolean useJdbcTemplate;
@@ -49,7 +53,12 @@ public class NativeQueryInfo {
     public static NativeQueryInfo of(Class<? extends NativeQuery> classe, MethodInvocation invocation) {
         NativeQueryInfo info = new NativeQueryInfo();
 
-        setFile(classe, invocation, info);
+        info.useSqlInline = invocation.getMethod().isAnnotationPresent(NativeQuerySql.class);
+        if (info.useSqlInline) {
+            info.sqlInline = invocation.getMethod().getAnnotation(NativeQuerySql.class).value();
+        } else {
+            setFile(classe, invocation, info);
+        }
 
         info.useJdbcTemplate = invocation.getMethod().isAnnotationPresent(NativeQueryUseJdbcTemplate.class);
         if (info.useJdbcTemplate) {
@@ -133,9 +142,16 @@ public class NativeQueryInfo {
         }
     }
 
+    private JtwigTemplate getJtwigTemplate() {
+        if (useSqlInline) {
+            return JtwigTemplate.inlineTemplate(sqlInline, JtwigTemplateConfig.get());
+        }
+        return JtwigTemplate.classpathTemplate(file, JtwigTemplateConfig.get());
+    }
+
     String getSql() {
         if (sql == null) {
-            JtwigTemplate template = JtwigTemplate.classpathTemplate(file, JtwigTemplateConfig.get());
+            JtwigTemplate template = getJtwigTemplate();
             JtwigModel model = JtwigModel.newModel();
             parameterList.forEach(p -> model.with(p.getName(), p.getValue()));
             sql = template.render(model);

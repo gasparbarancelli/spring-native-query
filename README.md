@@ -27,7 +27,7 @@ In your project add the dependency of the library, let's take an example using m
 <dependency>
     <groupId>io.github.gasparbarancelli</groupId>
     <artifactId>spring-native-query</artifactId>
-    <version>1.0.17</version>
+    <version>1.0.18</version>
 </dependency>
 ```    
 
@@ -115,9 +115,7 @@ import lombok.*;
 public class UserFilter {
   private Number id;
   
-  /*
-    Custom operator, when add parameter value in query and jwitg, the paramter is transformed
-  */
+  // Custom operator, when add parameter value in query and jwitg, the paramter is transformed
   @NativeQueryParam(value = "name", operator = NativeQueryOperator.CONTAINING)
   private String name;
 
@@ -140,31 +138,25 @@ public interface UserNativeQuery extends NativeQuery {
 
   List<UserTO> findUsers();
 
+  // When using the NativeQuerySql annotation it is not necessary to have the file containing the sql statement
+  @NativeQuerySql("SELECT cod as \"id\", full_name as \"name\" FROM USER")
+  List<UserTO> findBySqlInline();
+
   List<UserTO> findWithMap(Map<String, Object> params);
   
-  /*
-    Add fields children of parameter
-  */
+  // Add fields children of parameter
   List<UserTO> findUsersByFilter(@NativeQueryParam(value = "filter", addChildren = true) UserFilter filter);
   
-  /*
-    Add pagination
-  */
+  // Add pagination
   List<UserTO> findActiveUsers(Pageable pageable);
 
-  /*
-    Ordering
-  */
+  // Ordering
   List<UserTO> findActiveUsersWithSort(Sort sort);
 
-  /*
-    Add pagination and return object with values for the pagination (count, page, size)
-  */
+  // Add pagination and return object with values for the pagination (count, page, size)
   Page<UserTO> findActiveUsersWithPage(Pageable pageable);
   
-  /*
-    Custom parameter name
-  */
+  // Custom parameter name
   UserTO findUserById(@NativeQueryParam(value = "codigo") Number id);
   
   List<Number> getUsersId();
@@ -260,6 +252,11 @@ public class UserController {
   @GetMapping()
   public List<UserTO> findUsers() {
     return userNativeQuery.findUsers();
+  }
+  
+  @GetMapping("inline")
+  public List<UserTO> findBySqlInline() {
+    return userNativeQuery.findBySqlInline();
   }
   
   @GetMapping("map")
