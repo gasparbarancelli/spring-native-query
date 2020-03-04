@@ -26,10 +26,6 @@ public class NativeQueryAccessMethod {
         }
     }
 
-    public boolean paramIsPresent() {
-        return param != null;
-    }
-
     public Method getMethod() {
         return method;
     }

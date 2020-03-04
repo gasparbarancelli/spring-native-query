@@ -28,8 +28,8 @@ class NativeQueryParameter {
 
             NativeQueryFieldInfo fieldInfo = fieldInfoMap.get(accessMethod.getName());
             if (fieldInfo != null) {
-                NativeQueryParam queryParam = accessMethod.getParam();
-                if (accessMethod.paramIsPresent()) {
+                NativeQueryParam queryParam = fieldInfo.getParam() != null ? fieldInfo.getParam() : accessMethod.getParam();
+                if (queryParam != null) {
                     if (queryParam.addChildren()) {
                         String parentNameChildren = parentName + WordUtils.capitalize(queryParam.value());
                         parameterList.addAll(ofDeclaredMethods(parentNameChildren, fieldInfo.getType(), value));
