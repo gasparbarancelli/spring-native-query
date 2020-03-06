@@ -89,6 +89,7 @@ public class NativeQueryInfo {
 
     public static void setParameters(NativeQueryInfo info, MethodInvocation invocation) {
         info.sql = null;
+        info.sort = null;
         info.parameterList = new ArrayList<>();
         info.pageable = null;
         for (int i = 0; i < invocation.getArguments().length; i++) {
