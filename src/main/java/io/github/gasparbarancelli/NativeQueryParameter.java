@@ -2,12 +2,13 @@ package io.github.gasparbarancelli;
 
 import org.apache.commons.text.WordUtils;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-class NativeQueryParameter {
+class NativeQueryParameter implements Serializable {
 
     private final String name;
 

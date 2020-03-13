@@ -1,6 +1,7 @@
 package io.github.gasparbarancelli;
 
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.lang3.SerializationUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -20,7 +21,7 @@ public class NativeQueryCache {
                 invocation.getMethod().getName()
         );
         
-        NativeQueryInfo info = NativeQueryCache.CACHE_NATIVE_QUERY_INFO.get(nativeQueryInfoKey);
+        NativeQueryInfo info = SerializationUtils.clone(NativeQueryCache.CACHE_NATIVE_QUERY_INFO.get(nativeQueryInfoKey));
         if (info == null) {
             info = NativeQueryInfo.of(classe, invocation);
             NativeQueryCache.CACHE_NATIVE_QUERY_INFO.put(nativeQueryInfoKey, info);

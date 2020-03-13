@@ -12,10 +12,11 @@ import org.springframework.data.util.TypeInformation;
 
 import javax.persistence.Entity;
 import java.io.File;
+import java.io.Serializable;
 import java.lang.reflect.Parameter;
 import java.util.*;
 
-public class NativeQueryInfo {
+public class NativeQueryInfo implements Serializable {
 
     private String file;
 
