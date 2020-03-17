@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-class NativeQueryParameter implements Serializable {
+class NativeQueryParameter implements Serializable, Cloneable {
 
     private final String name;
 
@@ -78,6 +78,11 @@ class NativeQueryParameter implements Serializable {
 
     public Object getValue() {
         return this.value;
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 
 }

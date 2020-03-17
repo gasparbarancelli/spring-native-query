@@ -16,7 +16,7 @@ import java.io.Serializable;
 import java.lang.reflect.Parameter;
 import java.util.*;
 
-public class NativeQueryInfo implements Serializable {
+public class NativeQueryInfo implements Serializable, Cloneable {
 
     private String file;
 
@@ -285,4 +285,10 @@ public class NativeQueryInfo implements Serializable {
     public List<Class<ProcessorSql>> getProcessorSqlList() {
         return this.processorSqlList;
     }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
+
 }

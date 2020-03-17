@@ -20,11 +20,17 @@ public class NativeQueryCache {
                 classe.getName(), 
                 invocation.getMethod().getName()
         );
-        
-        NativeQueryInfo info = SerializationUtils.clone(NativeQueryCache.CACHE_NATIVE_QUERY_INFO.get(nativeQueryInfoKey));
+
+        NativeQueryInfo info = NativeQueryCache.CACHE_NATIVE_QUERY_INFO.get(nativeQueryInfoKey);
         if (info == null) {
             info = NativeQueryInfo.of(classe, invocation);
             NativeQueryCache.CACHE_NATIVE_QUERY_INFO.put(nativeQueryInfoKey, info);
+        } else {
+            try {
+                info = (NativeQueryInfo) info.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new RuntimeException(e);
+            }
         }
         NativeQueryInfo.setParameters(info, invocation);
         return info;
