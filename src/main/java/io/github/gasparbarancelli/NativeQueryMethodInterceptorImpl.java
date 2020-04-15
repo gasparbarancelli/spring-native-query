@@ -4,14 +4,18 @@ import org.hibernate.Session;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.transform.Transformers;
 import org.hibernate.type.LongType;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterceptor {
 
@@ -43,6 +47,11 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
             if (info.isJavaObject()) {
                 return jdbcTemplate.queryForObject(info.getSql(), parametroList, info.getAliasToBean());
             }
+
+            if (info.returnTypeIsOptional()) {
+                return getOptionalReturn(() -> jdbcTemplate.queryForObject(info.getSql(), parametroList, beanPropertyRowMapper));
+            }
+
             return jdbcTemplate.queryForObject(info.getSql(), parametroList, beanPropertyRowMapper);
         }
 
@@ -78,6 +87,11 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
             query.executeUpdate();
             return null;
         }
+
+        if (info.returnTypeIsOptional()) {
+            return getOptionalReturn(query::getSingleResult);
+        }
+
         if (info.isSingleResult()) {
             return query.getSingleResult();
         }
@@ -87,6 +101,14 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
             return new PageImpl(resultList, info.getPageable(), getTotalRecords(info, session));
         }
         return resultList;
+    }
+
+    private Object getOptionalReturn(Supplier<Object> result) {
+        try {
+            return Optional.ofNullable(result.get());
+        } catch (NoResultException | EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     private Long getTotalRecords(NativeQueryInfo info, Session session) {
