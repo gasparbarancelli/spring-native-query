@@ -4,7 +4,7 @@
 
     <groupId>io.github.gasparbarancelli</groupId>
     <artifactId>spring-native-query</artifactId>
-    <version>1.0.23-SNAPSHOT</version>
+    <version>1.0.23</version>
     <packaging>jar</packaging>
 
     <name>spring-native-query</name>
@@ -117,7 +117,7 @@
         <connection>scm:git:git://github.com/gasparbarancelli/spring-native-query.git</connection>
         <developerConnection>scm:git:ssh://github.com:gasparbarancelli/spring-native-query.git</developerConnection>
         <url>https://github.com/gasparbarancelli/spring-native-query</url>
-        <tag>spring-native-query-1.0.0</tag>
+        <tag>spring-native-query-1.0.23</tag>
     </scm>
 
     <distributionManagement>
