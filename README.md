@@ -27,7 +27,7 @@ In your project add the dependency of the library, let's take an example using m
 <dependency>
     <groupId>io.github.gasparbarancelli</groupId>
     <artifactId>spring-native-query</artifactId>
-    <version>1.0.22</version>
+    <version>1.0.23</version>
 </dependency>
 ```    
 
@@ -163,6 +163,10 @@ public interface UserNativeQuery extends NativeQuery {
   
   String getUserName(Number id);
   
+  Optional<String> getOptionalUserName(Number id);
+  
+  Optional<UserTO> findOptionalUserById(@NativeQueryParam(value = "codigo") Number id);
+  
 }
 ```
 
@@ -230,6 +234,18 @@ getUserName.sql file example
 
 ```sql
 SELECT full_name as "name" FROM USER WHERE cod = :id
+```
+
+getOptionalUserName.sql file example
+
+```sql
+SELECT full_name as "name" FROM USER WHERE cod = :id
+```
+
+findOptionalUserById.sql file example
+
+```sql
+SELECT cod as "id", full_name as "name" FROM USER WHERE cod = :codigo
 ```
 
 UserController file example
@@ -307,6 +323,17 @@ public class UserController {
   public String getUserName(@PathVariable("id") Number id) {
     return userNativeQuery.getUserName(id);
   }
+
+  @GetMapping("{id}/optional/name")
+  public Optional<String> getOptionalUserName(@PathVariable("id") Number id) {
+    return userNativeQuery.getOptionalUserName(id);
+  }
+
+  @GetMapping("{id}/optional")
+  public Optional<UserTO> findOptionalUser(@PathVariable("id") Number id) {
+    return userNativeQuery.findOptionalUserById(id);
+  }
+
 
 }
 ```
