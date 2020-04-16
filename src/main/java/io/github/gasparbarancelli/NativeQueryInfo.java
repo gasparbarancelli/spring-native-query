@@ -78,7 +78,7 @@ public class NativeQueryInfo implements Serializable, Cloneable {
 
         info.returnType = invocation.getMethod().getReturnType();
         info.returnTypeIsIterable = Iterable.class.isAssignableFrom(info.returnType);
-        if (info.returnTypeIsIterable) {
+        if (info.returnTypeIsIterable || info.returnType.getSimpleName().equals(Optional.class.getSimpleName())) {
             TypeInformation<?> componentType = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod()).getComponentType();
             info.aliasToBean = Objects.requireNonNull(componentType).getType();
         } else {
@@ -291,4 +291,7 @@ public class NativeQueryInfo implements Serializable, Cloneable {
         return super.clone();
     }
 
+    public boolean returnTypeIsOptional() {
+        return this.returnType.getSimpleName().equals(Optional.class.getSimpleName());
+    }
 }
