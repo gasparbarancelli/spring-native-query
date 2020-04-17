@@ -78,7 +78,7 @@ public class NativeQueryInfo implements Serializable, Cloneable {
 
         info.returnType = invocation.getMethod().getReturnType();
         info.returnTypeIsIterable = Iterable.class.isAssignableFrom(info.returnType);
-        if (info.returnTypeIsIterable || info.returnType.getSimpleName().equals(Optional.class.getSimpleName())) {
+        if (info.returnTypeIsIterable || info.returnTypeIsOptional()) {
             TypeInformation<?> componentType = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod()).getComponentType();
             info.aliasToBean = Objects.requireNonNull(componentType).getType();
         } else {
