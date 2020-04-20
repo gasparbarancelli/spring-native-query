@@ -1,4 +1,4 @@
-package io.github.gasparbarancelli;
+package io.github.gasparbarancelli.engine.jtwig;
 
 import org.jtwig.environment.EnvironmentConfiguration;
 import org.jtwig.environment.EnvironmentConfigurationBuilder;

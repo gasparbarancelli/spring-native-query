@@ -1,8 +1,7 @@
 package io.github.gasparbarancelli;
 
+import io.github.gasparbarancelli.engine.jtwig.JtwigTemplateEngineSQLProcessor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.jtwig.JtwigModel;
-import org.jtwig.JtwigTemplate;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +12,7 @@ import org.springframework.data.util.TypeInformation;
 import javax.persistence.Entity;
 import java.io.File;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
 
@@ -54,32 +54,33 @@ public class NativeQueryInfo implements Serializable, Cloneable {
     public static NativeQueryInfo of(Class<? extends NativeQuery> classe, MethodInvocation invocation) {
         NativeQueryInfo info = new NativeQueryInfo();
 
-        info.useSqlInline = invocation.getMethod().isAnnotationPresent(NativeQuerySql.class);
+        Method method = invocation.getMethod();
+        info.useSqlInline = method.isAnnotationPresent(NativeQuerySql.class);
         if (info.useSqlInline) {
-            info.sqlInline = invocation.getMethod().getAnnotation(NativeQuerySql.class).value();
+            info.sqlInline = method.getAnnotation(NativeQuerySql.class).value();
         } else {
             setFile(classe, invocation, info);
         }
 
-        info.useJdbcTemplate = invocation.getMethod().isAnnotationPresent(NativeQueryUseJdbcTemplate.class);
+        info.useJdbcTemplate = method.isAnnotationPresent(NativeQueryUseJdbcTemplate.class);
         if (info.useJdbcTemplate) {
-            NativeQueryUseJdbcTemplate jdbcTemplate = invocation.getMethod().getAnnotation(NativeQueryUseJdbcTemplate.class);
+            NativeQueryUseJdbcTemplate jdbcTemplate = method.getAnnotation(NativeQueryUseJdbcTemplate.class);
             info.useTenant = jdbcTemplate.useTenant();
         }
 
-        if (invocation.getMethod().isAnnotationPresent(NativeQueryReplaceSql.class)) {
-            if (invocation.getMethod().getAnnotation(NativeQueryReplaceSql.class).values().length > 0) {
-                for (NativeQueryReplaceSqlParams value : invocation.getMethod().getAnnotation(NativeQueryReplaceSql.class).values()) {
+        if (method.isAnnotationPresent(NativeQueryReplaceSql.class)) {
+            if (method.getAnnotation(NativeQueryReplaceSql.class).values().length > 0) {
+                for (NativeQueryReplaceSqlParams value : method.getAnnotation(NativeQueryReplaceSql.class).values()) {
                     info.replaceSql.put(value.key(), value.value());
                 }
-                info.processorSqlList.addAll(Arrays.asList(invocation.getMethod().getAnnotation(NativeQueryReplaceSql.class).processorParams()));
+                info.processorSqlList.addAll(Arrays.asList(method.getAnnotation(NativeQueryReplaceSql.class).processorParams()));
             }
         }
 
-        info.returnType = invocation.getMethod().getReturnType();
+        info.returnType = method.getReturnType();
         info.returnTypeIsIterable = Iterable.class.isAssignableFrom(info.returnType);
-        if (info.returnTypeIsIterable || info.returnType.getSimpleName().equals(Optional.class.getSimpleName())) {
-            TypeInformation<?> componentType = ClassTypeInformation.fromReturnTypeOf(invocation.getMethod()).getComponentType();
+        if (info.returnTypeIsIterable || info.returnTypeIsOptional()) {
+            TypeInformation<?> componentType = ClassTypeInformation.fromReturnTypeOf(method).getComponentType();
             info.aliasToBean = Objects.requireNonNull(componentType).getType();
         } else {
             info.aliasToBean = info.returnType;
@@ -144,56 +145,57 @@ public class NativeQueryInfo implements Serializable, Cloneable {
         }
     }
 
-    private JtwigTemplate getJtwigTemplate() {
-        if (useSqlInline) {
-            return JtwigTemplate.inlineTemplate(sqlInline, JtwigTemplateConfig.get());
-        }
-        return JtwigTemplate.classpathTemplate(file, JtwigTemplateConfig.get());
-    }
-
     String getSql() {
-        if (sql == null) {
-            JtwigTemplate template = getJtwigTemplate();
-            JtwigModel model = JtwigModel.newModel();
-            parameterList.forEach(p -> model.with(p.getName(), p.getValue()));
-            sql = template.render(model);
+        if (sql != null) {
+            return sql;
+        }
 
-            for (Class<ProcessorSql> aClass : processorSqlList) {
-                try {
-                    ProcessorSql processor = aClass.newInstance();
-                    processor.execute(sql, replaceSql);
-                } catch (Exception e) {
-                    throw new RuntimeException(e.getMessage());
+        sql = getSqlProcessed();
+
+        for (Class<ProcessorSql> aClass : processorSqlList) {
+            try {
+                ProcessorSql processor = aClass.newInstance();
+                processor.execute(sql, replaceSql);
+            } catch (Exception e) {
+                throw new RuntimeException(e.getMessage());
+            }
+        }
+
+        for (Map.Entry<String, String> replaceSqlEntry : replaceSql.entrySet()) {
+            sql = sql.replaceAll("\\$\\{"+replaceSqlEntry.getKey()+"}", replaceSqlEntry.getValue());
+        }
+
+        if (sort != null) {
+            StringBuilder orderBuilder = new StringBuilder();
+            for (Sort.Order order : sort) {
+                if (orderBuilder.length() == 0) {
+                    orderBuilder.append(" ORDER BY ");
+                } else {
+                    orderBuilder.append(", ");
                 }
+                orderBuilder.append(order.getProperty())
+                        .append(" ")
+                        .append(order.getDirection().name());
             }
 
-            for (Map.Entry<String, String> replaceSqlEntry : replaceSql.entrySet()) {
-                sql = sql.replaceAll("\\$\\{"+replaceSqlEntry.getKey()+"}", replaceSqlEntry.getValue());
-            }
+            sql += orderBuilder.toString();
+        }
 
-            if (sort != null) {
-                StringBuilder orderBuilder = new StringBuilder();
-                for (Sort.Order order : sort) {
-                    if (orderBuilder.length() == 0) {
-                        orderBuilder.append(" ORDER BY ");
-                    } else {
-                        orderBuilder.append(", ");
-                    }
-                    orderBuilder.append(order.getProperty())
-                            .append(" ")
-                            .append(order.getDirection().name());
-                }
-
-                sql += orderBuilder.toString();
-            }
-
-            if (useTenant) {
-                NativeQueryTenantNamedParameterJdbcTemplateInterceptor tenantJdbcTemplate = ApplicationContextProvider.getApplicationContext().getBean(NativeQueryTenantNamedParameterJdbcTemplateInterceptor.class);
-                sql = sql.replace(":SCHEMA", tenantJdbcTemplate.getTenant());
-            }
+        if (useTenant) {
+            NativeQueryTenantNamedParameterJdbcTemplateInterceptor tenantJdbcTemplate = ApplicationContextProvider.getApplicationContext().getBean(NativeQueryTenantNamedParameterJdbcTemplateInterceptor.class);
+            sql = sql.replace(":SCHEMA", tenantJdbcTemplate.getTenant());
         }
 
         return sql;
+    }
+
+    private String getSqlProcessed() {
+        return new JtwigTemplateEngineSQLProcessor()
+                .setParameter(parameterList)
+                .inline(useSqlInline)
+                .setClasspathTemplate(file)
+                .setInlineTemplate(sqlInline)
+                .getSql();
     }
 
     String getSqlTotalRecord() {
