@@ -61,12 +61,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jtwig</groupId>
-            <artifactId>jtwig-core</artifactId>
-            <version>5.87.0.RELEASE</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>0.9.11</version>
@@ -93,6 +87,13 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
             <version>1.8</version>
+        </dependency>
+
+        <!-- template engine -->
+        <dependency>
+            <groupId>org.jtwig</groupId>
+            <artifactId>jtwig-core</artifactId>
+            <version>5.87.0.RELEASE</version>
         </dependency>
 
     </dependencies>
