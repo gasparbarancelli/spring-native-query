@@ -27,7 +27,7 @@ In your project add the dependency of the library, let's take an example using m
 <dependency>
     <groupId>io.github.gasparbarancelli</groupId>
     <artifactId>spring-native-query</artifactId>
-    <version>1.0.23</version>
+    <version>1.0.24</version>
 </dependency>
 ```    
 
