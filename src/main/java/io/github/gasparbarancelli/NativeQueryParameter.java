@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-class NativeQueryParameter implements Serializable, Cloneable {
+public class NativeQueryParameter implements Serializable, Cloneable {
 
     private final String name;
 
