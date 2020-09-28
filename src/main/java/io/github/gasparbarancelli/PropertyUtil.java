@@ -59,8 +59,9 @@ public class PropertyUtil {
     }
 
     private static String getProperty(String propertyName, String defaultValue) throws IOException {
-        return getPropertyValue(propertyName)
-                .orElse(getYamlValue(propertyName).orElse(getPropertyByConfig(propertyName).orElse(defaultValue)));
+        return getPropertyValue(propertyName).orElseGet(() -> getYamlValue(propertyName)
+                        .orElseGet(() -> getPropertyByConfig(propertyName)
+                                .orElse(defaultValue)));
     }
 
     private static Optional<String> getPropertyValue(InputStream inputStream, String propertyName) throws IOException {
@@ -82,16 +83,20 @@ public class PropertyUtil {
         return Optional.empty();
     }
 
-    private static Optional<String> getYamlValue(InputStream inputStreamYml, String propertyName) throws java.io.IOException {
-        Map<String, Object> obj = mapper.readValue(inputStreamYml, HashMap.class);
-        Map<String, String> map = (HashMap<String, String>) obj.get("native-query");
-        if (map != null) {
-            return Optional.ofNullable(map.get(propertyName.replace("native-query.", "")));
+    private static Optional<String> getYamlValue(InputStream inputStreamYml, String propertyName) {
+        try {
+            Map<String, Object> obj = mapper.readValue(inputStreamYml, HashMap.class);
+            Map<String, String> map = (HashMap<String, String>) obj.get("native-query");
+            if (map != null) {
+                return Optional.ofNullable(map.get(propertyName.replace("native-query.", "")));
+            }
+            return Optional.empty();
+        } catch (Exception e) {
+            return Optional.empty();
         }
-        return Optional.empty();
     }
 
-    private static Optional<String> getYamlValue(String propertyName) throws java.io.IOException {
+    private static Optional<String> getYamlValue(String propertyName) {
         for (String file : yamlFileList) {
             Optional<InputStream> inputStreamYml = getInputStream(file);
             if (inputStreamYml.isPresent()) {
