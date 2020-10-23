@@ -40,12 +40,9 @@ public class HibernateTypesMapper {
             case "java.lang.Boolean": return StandardBasicTypes.BOOLEAN;
             case "java.lang.Character": return StandardBasicTypes.CHARACTER;
             case "java.util.Date": return StandardBasicTypes.DATE;
-//            case "java.lang.Number": return StandardBasicTypes.;
+            case "java.lang.Number": return StandardBasicTypes.DOUBLE;
         }
-        return null;
+        return StandardBasicTypes.STRING;
     }
 
-    public static void main(String[] args) {
-        System.out.println(Integer.class.getCanonicalName());
-    }
 }
