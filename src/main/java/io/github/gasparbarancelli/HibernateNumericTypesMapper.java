@@ -1,6 +1,7 @@
 package io.github.gasparbarancelli;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.hibernate.query.NativeQuery;
@@ -25,6 +26,8 @@ public class HibernateNumericTypesMapper {
             return StandardBasicTypes.LONG;
         } else if (fieldType.isAssignableFrom(Double.class)) {
             return StandardBasicTypes.DOUBLE;
+        } else if (fieldType.isAssignableFrom(BigDecimal.class)) {
+            return StandardBasicTypes.BIG_DECIMAL;
         } else if (fieldType.isAssignableFrom(Float.class)) {
             return StandardBasicTypes.FLOAT;
         } else if (fieldType.isAssignableFrom(BigInteger.class)) {
