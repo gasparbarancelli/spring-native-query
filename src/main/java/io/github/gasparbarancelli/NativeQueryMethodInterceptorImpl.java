@@ -4,6 +4,7 @@ import org.hibernate.Session;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.transform.Transformers;
 import org.hibernate.type.LongType;
+import org.hibernate.type.StandardBasicTypes;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -81,6 +82,7 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
         query.getQueryString();
 
         if (!info.isJavaObject() && !info.isEntity()) {
+            HibernateNumericTypesMapper.map(query, info.getAliasToBean());
             query.setResultTransformer(Transformers.aliasToBean(info.getAliasToBean()));
         }
         if (info.getReturnType().getSimpleName().equals(Void.TYPE.getName())) {
