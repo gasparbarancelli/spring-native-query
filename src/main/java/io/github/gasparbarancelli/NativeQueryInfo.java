@@ -128,7 +128,12 @@ public class NativeQueryInfo implements Serializable, Cloneable {
     }
 
     private static void setFile(Class<? extends NativeQuery> classe, MethodInvocation invocation, NativeQueryInfo info) {
-        info.file = "nativeQuery/";
+        info.file = PropertyUtil.getValue("native-query.sql.directory", NativeQueryAutoConfiguration.SQL_DIRECTORY);
+
+        if (!info.file.endsWith("/")) {
+            info.file += "/";
+        }
+
         if (classe.isAnnotationPresent(NativeQueryFolder.class)) {
             info.file += classe.getAnnotation(NativeQueryFolder.class).value() + File.separator;
         }
