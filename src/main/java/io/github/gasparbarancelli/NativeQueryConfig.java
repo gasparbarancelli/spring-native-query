@@ -8,8 +8,8 @@ public interface NativeQueryConfig {
         return "sql";
     }
 
-    default Boolean getUseHibernateTypes() {
-        return Boolean.TRUE;
+    default boolean getUseHibernateTypes() {
+        return true;
     }
 
     default String getSQLDirectory() {
