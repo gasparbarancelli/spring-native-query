@@ -60,7 +60,7 @@ public class PropertyUtil {
                     case "native-query.sql.directory":
                         return Optional.ofNullable(config.getSQLDirectory());
                     case "native-query.use-hibernate-types":
-                        return Optional.of(config.getUseHibernateTypes().toString());
+                        return Optional.of(String.valueOf(config.getUseHibernateTypes()));
                     default:
                         return Optional.ofNullable(config.getFileSufix());
                 }
