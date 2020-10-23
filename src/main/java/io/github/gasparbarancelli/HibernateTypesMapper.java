@@ -8,7 +8,7 @@ import org.hibernate.query.NativeQuery;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
-public class HibernateNumericTypesMapper {
+public class HibernateTypesMapper {
 
     public static void map(NativeQuery<?> query, Class<?> dto) {
         for (Field field : dto.getDeclaredFields()) {
@@ -34,6 +34,10 @@ public class HibernateNumericTypesMapper {
             return StandardBasicTypes.BIG_INTEGER;
         } else if (fieldType.isAssignableFrom(Short.class)) {
             return StandardBasicTypes.SHORT;
+        } else if (fieldType.isAssignableFrom(String.class)) {
+            return StandardBasicTypes.STRING;
+        } else if (fieldType.isAssignableFrom(Boolean.class)) {
+            return StandardBasicTypes.BOOLEAN;
         }
         return null;
     }
