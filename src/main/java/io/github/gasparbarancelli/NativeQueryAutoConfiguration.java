@@ -11,6 +11,8 @@ import java.util.Set;
 @Configuration
 public class NativeQueryAutoConfiguration {
 
+    public static final String SQL_DIRECTORY = "nativeQuery";
+
     @Bean
     public BeanFactoryPostProcessor beanFactoryPostProcessor() {
         return bf -> {
