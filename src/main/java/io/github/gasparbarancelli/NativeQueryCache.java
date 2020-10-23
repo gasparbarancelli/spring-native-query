@@ -1,7 +1,6 @@
 package io.github.gasparbarancelli;
 
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.lang3.SerializationUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
