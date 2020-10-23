@@ -6,4 +6,8 @@ public interface NativeQueryConfig {
 
     String getFileSufix();
 
+    default String getSQLDirectory() {
+        return NativeQueryAutoConfiguration.SQL_DIRECTORY;
+    }
+
 }

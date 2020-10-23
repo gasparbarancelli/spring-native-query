@@ -1,12 +1,19 @@
 package io.github.gasparbarancelli;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import org.reflections.Reflections;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
+import org.reflections.Reflections;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 public class PropertyUtil {
 
@@ -46,10 +53,14 @@ public class PropertyUtil {
         for (Class<? extends NativeQueryConfig> subType : subTypesOfNativeQueryConfig) {
             try {
                 NativeQueryConfig config = (NativeQueryConfig) subType.getConstructors()[0].newInstance();
-                if ("native-query.package-scan".equals(propertyName)) {
-                    return Optional.ofNullable(config.getPackageScan());
-                } else {
-                    return Optional.ofNullable(config.getFileSufix());
+
+                switch (propertyName) {
+                    case "native-query.package-scan":
+                        return Optional.ofNullable(config.getPackageScan());
+                    case "native-query.sql.directory":
+                        return Optional.ofNullable(config.getSQLDirectory());
+                    default:
+                        return Optional.ofNullable(config.getFileSufix());
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
