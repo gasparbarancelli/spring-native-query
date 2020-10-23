@@ -1,22 +1,22 @@
 package io.github.gasparbarancelli;
 
-import org.hibernate.Session;
-import org.hibernate.query.NativeQuery;
-import org.hibernate.transform.Transformers;
-import org.hibernate.type.LongType;
-import org.hibernate.type.StandardBasicTypes;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+
+import org.hibernate.Session;
+import org.hibernate.query.NativeQuery;
+import org.hibernate.transform.Transformers;
+import org.hibernate.type.LongType;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterceptor {
 
