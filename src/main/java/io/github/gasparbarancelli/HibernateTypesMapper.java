@@ -1,6 +1,8 @@
 package io.github.gasparbarancelli;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hibernate.query.NativeQuery;
 import org.hibernate.type.StandardBasicTypes;
@@ -8,13 +10,22 @@ import org.hibernate.type.Type;
 
 public class HibernateTypesMapper {
 
+    private static final Map<String, Map<String, Type>> CACHE = new HashMap<>();
+
     public static void map(NativeQuery<?> query, Class<?> dto) {
-        for (Field field : dto.getDeclaredFields()) {
-            Type hibernateType = getHibernateType(field.getType());
-            if (hibernateType != null) {
-                query.addScalar(field.getName(), hibernateType);
+        Map<String, Type> map = CACHE.get(dto.getName());
+        if (map == null) {
+            map = new HashMap<>();
+            for (Field field : dto.getDeclaredFields()) {
+                Type hibernateType = getHibernateType(field.getType());
+                if (hibernateType != null) {
+                    map.put(field.getName(), hibernateType);
+                }
             }
+            CACHE.put(dto.getName(), map);
         }
+
+        map.forEach(query::addScalar);
     }
 
     private static Type getHibernateType(Class<?> fieldType) {
