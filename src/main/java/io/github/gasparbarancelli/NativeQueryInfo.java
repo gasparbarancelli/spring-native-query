@@ -1,6 +1,19 @@
 package io.github.gasparbarancelli;
 
-import io.github.gasparbarancelli.engine.jtwig.JtwigTemplateEngineSQLProcessor;
+import java.io.File;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+import javax.persistence.Entity;
+
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
@@ -9,12 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
-import javax.persistence.Entity;
-import java.io.File;
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.*;
+import io.github.gasparbarancelli.engine.jtwig.JtwigTemplateEngineSQLProcessor;
 
 public class NativeQueryInfo implements Serializable, Cloneable {
 
@@ -137,7 +145,14 @@ public class NativeQueryInfo implements Serializable, Cloneable {
         if (classe.isAnnotationPresent(NativeQueryFolder.class)) {
             info.file += classe.getAnnotation(NativeQueryFolder.class).value() + File.separator;
         }
-        info.file += invocation.getMethod().getName() + ".";
+
+        final Method method = invocation.getMethod();
+        if (method.isAnnotationPresent(NativeQueryFileName.class)) {
+            info.file += method.getAnnotation(NativeQueryFileName.class).value() + ".";
+        } else {
+            info.file += method.getName() + ".";
+        }
+
         String fileSufix = PropertyUtil.getValue("native-query.file.sufix", "twig");
 
         // backwards compatibility where the default extension was twig
