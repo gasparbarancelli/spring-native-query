@@ -52,6 +52,8 @@ public class NativeQueryInfo implements Serializable, Cloneable {
 
     private boolean useTenant;
 
+    private boolean useHibernateTypes;
+
     private final Map<String, String> replaceSql = new HashMap<>();
 
     private final List<Class<ProcessorSql>> processorSqlList = new ArrayList<>();
@@ -68,6 +70,12 @@ public class NativeQueryInfo implements Serializable, Cloneable {
             info.sqlInline = method.getAnnotation(NativeQuerySql.class).value();
         } else {
             setFile(classe, invocation, info);
+        }
+
+        if (method.isAnnotationPresent(NativeQueryUseHibernateTypes.class)) {
+            info.useHibernateTypes = method.getAnnotation(NativeQueryUseHibernateTypes.class).useHibernateTypes();
+        } else {
+            info.useHibernateTypes = Boolean.parseBoolean(PropertyUtil.getValue("native-query.use-hibernate-types", "true"));
         }
 
         info.useJdbcTemplate = method.isAnnotationPresent(NativeQueryUseJdbcTemplate.class);
@@ -315,5 +323,9 @@ public class NativeQueryInfo implements Serializable, Cloneable {
 
     public boolean returnTypeIsOptional() {
         return this.returnType.getSimpleName().equals(Optional.class.getSimpleName());
+    }
+
+    public boolean isUseHibernateTypes() {
+        return useHibernateTypes;
     }
 }

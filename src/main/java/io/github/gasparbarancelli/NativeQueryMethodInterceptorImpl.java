@@ -82,7 +82,9 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
         query.getQueryString();
 
         if (!info.isJavaObject() && !info.isEntity()) {
-            HibernateTypesMapper.map(query, info.getAliasToBean());
+            if (info.isUseHibernateTypes()) {
+                HibernateTypesMapper.map(query, info.getAliasToBean());
+            }
             query.setResultTransformer(Transformers.aliasToBean(info.getAliasToBean()));
         }
         if (info.getReturnType().getSimpleName().equals(Void.TYPE.getName())) {
