@@ -1,5 +1,14 @@
 package io.github.gasparbarancelli;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+
 import org.hibernate.Session;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.transform.Transformers;
@@ -8,14 +17,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Supplier;
 
 public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterceptor {
 
@@ -81,6 +82,9 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
         query.getQueryString();
 
         if (!info.isJavaObject() && !info.isEntity()) {
+            if (info.isUseHibernateTypes()) {
+                HibernateTypesMapper.map(query, info.getAliasToBean());
+            }
             query.setResultTransformer(Transformers.aliasToBean(info.getAliasToBean()));
         }
         if (info.getReturnType().getSimpleName().equals(Void.TYPE.getName())) {
