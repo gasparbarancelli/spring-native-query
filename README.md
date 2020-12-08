@@ -17,6 +17,12 @@ The file that contains the SQL query is a Jtwig template, where we can apply val
 
 By default native query files must be added to a folder named "nativeQuery" inside the resource folder. Remember, the file name must be the same as the method name.
 
+**in version 1.0.28 above we started using Hibernate Types to correctly convert data types, for previous versions consider disabling the use of Hibernate Types by the configuration below.**
+
+```
+native-query.use-hibernate-types=false
+```
+
 # Example
 
 Here are some examples for a better understanding. Let's create a Spring Boot project with dependence, Spring Data Jpa and the H2 database. When starting the project, let's create a sql script by creating a new table and inserting some records. All sample source code is in [github](https://github.com/gasparbarancelli/demo-spring-native-query).
@@ -27,7 +33,7 @@ In your project add the dependency of the library, let's take an example using m
 <dependency>
     <groupId>io.github.gasparbarancelli</groupId>
     <artifactId>spring-native-query</artifactId>
-    <version>1.0.25</version>
+    <version>1.0.28</version>
 </dependency>
 ```    
 
@@ -60,6 +66,7 @@ If you use properties file
 ``` properties
 native-query.package-scan=io.github.gasparbarancelli.demospringnativequery
 native-query.file.sufix=sql
+native-query.use-hibernate-types=false
 ```
 If you use yml file
 
@@ -68,6 +75,7 @@ native-query:
   package-scan: io.github.gasparbarancelli.demospringnativequery
   file:
     sufix: sql
+  use-hibernate-types: false
 ```
 
 We can also define programatically implementing the interface NativeQueryConfig.
@@ -85,6 +93,11 @@ public class NativeQueryDefaultConfig implements NativeQueryConfig {
     @Override
     public String getFileSufix() {
         return "sql";
+    }
+    
+    @Override
+    public boolean getUseHibernateTypes() {
+        return false;
     }
 
 }
