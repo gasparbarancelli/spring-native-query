@@ -1,21 +1,18 @@
 package io.github.gasparbarancelli;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import org.reflections.Reflections;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 public class PropertyUtil {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PropertyUtil.class);
 
     private static final Map<String, String> cache = new HashMap<>();
 
@@ -33,11 +30,14 @@ public class PropertyUtil {
         try {
             String value = cache.get(propertyName);
             if (value != null) {
+                LOGGER.debug("property value obtained by cache");
                 return value;
             }
 
             value = getProperty(propertyName, defaultValue);
 
+            LOGGER.debug("property {} contains the value {}", propertyName, value);
+            LOGGER.debug("cached property value");
             cache.put(propertyName, value);
             return value;
         } catch (Exception e) {
@@ -54,6 +54,7 @@ public class PropertyUtil {
             try {
                 NativeQueryConfig config = (NativeQueryConfig) subType.getConstructors()[0].newInstance();
 
+                LOGGER.debug("property value obtained by NativeQueryConfig class");
                 switch (propertyName) {
                     case "native-query.package-scan":
                         return Optional.ofNullable(config.getPackageScan());
@@ -72,9 +73,13 @@ public class PropertyUtil {
     }
 
     private static String getProperty(String propertyName, String defaultValue) throws IOException {
-        return getPropertyValue(propertyName).orElseGet(() -> getYamlValue(propertyName)
+        return getPropertyValue(propertyName)
+                .orElseGet(() -> getYamlValue(propertyName)
                         .orElseGet(() -> getPropertyByConfig(propertyName)
-                                .orElse(defaultValue)));
+                                .orElseGet(() -> {
+                                    LOGGER.debug("property value obtained by default value");
+                                    return defaultValue;
+                                })));
     }
 
     private static Optional<String> getPropertyValue(InputStream inputStream, String propertyName) throws IOException {
@@ -89,6 +94,7 @@ public class PropertyUtil {
             if (inputStreamYml.isPresent()) {
                 Optional<String> value = getPropertyValue(inputStreamYml.get(), propertyName);
                 if (value.isPresent()) {
+                    LOGGER.debug("property value obtained by application.properties");
                     return value;
                 }
             }
@@ -115,6 +121,7 @@ public class PropertyUtil {
             if (inputStreamYml.isPresent()) {
                 Optional<String> value = getYamlValue(inputStreamYml.get(), propertyName);
                 if (value.isPresent()) {
+                    LOGGER.debug("property value obtained by application.yaml");
                     return value;
                 }
             }

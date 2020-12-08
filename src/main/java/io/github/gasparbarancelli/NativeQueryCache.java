@@ -1,12 +1,16 @@
 package io.github.gasparbarancelli;
 
 import org.aopalliance.intercept.MethodInvocation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 
 public class NativeQueryCache {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NativeQueryCache.class);
 
     private static final Map<NativeQueryInfoKey, NativeQueryInfo> CACHE_NATIVE_QUERY_INFO = new HashMap<>();
 
@@ -19,15 +23,19 @@ public class NativeQueryCache {
                 classe.getName(), 
                 invocation.getMethod().getName()
         );
+        LOGGER.debug("information cache key {}", nativeQueryInfoKey.toString());
 
         NativeQueryInfo info = NativeQueryCache.CACHE_NATIVE_QUERY_INFO.get(nativeQueryInfoKey);
         if (info == null) {
             info = NativeQueryInfo.of(classe, invocation);
+            LOGGER.debug("caching method {} information from interface {}", invocation.getMethod().getName(), classe.getName());
             NativeQueryCache.CACHE_NATIVE_QUERY_INFO.put(nativeQueryInfoKey, info);
         } else {
             try {
+                LOGGER.debug("getting from the cache the information of method {} of class {}", invocation.getMethod().getName(), classe.getName());
                 info = (NativeQueryInfo) info.clone();
             } catch (CloneNotSupportedException e) {
+                LOGGER.debug("error in cloning the information that was cached in method {} of class {}", invocation.getMethod().getName(), classe.getName());
                 throw new RuntimeException(e);
             }
         }
@@ -105,6 +113,15 @@ public class NativeQueryCache {
         public int hashCode() {
             return Objects.hash(className, methodName);
         }
+
+        @Override
+        public String toString() {
+            return "NativeQueryInfoKey{" +
+                    "className='" + className + '\'' +
+                    ", methodName='" + methodName + '\'' +
+                    '}';
+        }
+
     }
 
 }

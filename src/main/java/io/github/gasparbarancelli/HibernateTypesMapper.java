@@ -1,26 +1,32 @@
 package io.github.gasparbarancelli;
 
+import org.hibernate.query.NativeQuery;
+import org.hibernate.type.StandardBasicTypes;
+import org.hibernate.type.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.query.NativeQuery;
-import org.hibernate.type.StandardBasicTypes;
-import org.hibernate.type.Type;
-
 public class HibernateTypesMapper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HibernateTypesMapper.class);
 
     private static final Map<String, Map<String, Type>> CACHE = new HashMap<>();
 
     public static void map(NativeQuery<?> query, Class<?> dto) {
         Map<String, Type> map = CACHE.get(dto.getName());
+        LOGGER.debug("hibernate types cache key {}", dto.getName());
         if (map == null) {
+            LOGGER.debug("creating a cache for the fields of object {}", dto.getName());
             map = new HashMap<>();
             for (Field field : dto.getDeclaredFields()) {
+                LOGGER.debug("getting the hibernate typing for field {} of object {}", field.getName(), dto.getName());
                 Type hibernateType = getHibernateType(field.getType());
-                if (hibernateType != null) {
-                    map.put(field.getName(), hibernateType);
-                }
+                LOGGER.debug("obtained type is {}", hibernateType.getName());
+                map.put(field.getName(), hibernateType);
             }
             CACHE.put(dto.getName(), map);
         }

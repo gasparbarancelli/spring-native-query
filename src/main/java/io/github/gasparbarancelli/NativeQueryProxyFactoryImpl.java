@@ -2,6 +2,8 @@ package io.github.gasparbarancelli;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
 
 import java.util.HashMap;
@@ -10,13 +12,15 @@ import java.util.Objects;
 
 public class NativeQueryProxyFactoryImpl implements NativeQueryProxyFactory {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(NativeQueryProxyFactoryImpl.class);
+
     private final NativeQueryMethodInterceptor nativeQueryMethodInterceptor;
 
     public NativeQueryProxyFactoryImpl() {
         this.nativeQueryMethodInterceptor = new NativeQueryMethodInterceptorImpl();
     }
 
-    private class CacheKey {
+    private static class CacheKey {
 
         String className;
 
@@ -46,6 +50,7 @@ public class NativeQueryProxyFactoryImpl implements NativeQueryProxyFactory {
 
     @Override
     public Object create(Class<? extends NativeQuery> classe) {
+        LOGGER.debug("creating an {} interface proxy", classe.getName());
         ProxyFactory proxy = new ProxyFactory();
         proxy.setTarget(Mockito.mock(classe));
         proxy.setInterfaces(classe, NativeQuery.class);
@@ -53,6 +58,7 @@ public class NativeQueryProxyFactoryImpl implements NativeQueryProxyFactory {
             if ("toString".equals(invocation.getMethod().getName())) {
                 return "NativeQuery Implementation";
             }
+            LOGGER.debug("intercepting the call of method {} of class {}", invocation.getMethod().getName(), classe.getName());
             NativeQueryInfo info = NativeQueryCache.get(classe, invocation);
             return nativeQueryMethodInterceptor.executeQuery(info);
         });

@@ -1,6 +1,8 @@
 package io.github.gasparbarancelli;
 
 import org.apache.commons.text.WordUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -9,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 public class NativeQueryParameter implements Serializable, Cloneable {
+
+    // todo adicionar log
+    private static final Logger LOGGER = LoggerFactory.getLogger(NativeQueryParameter.class);
 
     private final String name;
 
@@ -85,4 +90,11 @@ public class NativeQueryParameter implements Serializable, Cloneable {
         return super.clone();
     }
 
+    @Override
+    public String toString() {
+        return "NativeQueryParameter{" +
+                "name='" + name + '\'' +
+                ", value=" + value +
+                '}';
+    }
 }

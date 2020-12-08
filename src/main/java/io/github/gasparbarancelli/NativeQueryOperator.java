@@ -13,7 +13,7 @@ public enum NativeQueryOperator {
     STARTS_WITH(new TransformParamStartsWith()),
     ENDS_WITH(new TransformParamEndsWith());
 
-    private Function<Object, Object> transformParam;
+    private final Function<Object, Object> transformParam;
 
     NativeQueryOperator(Function<Object, Object> transformParam) {
         this.transformParam = transformParam;
