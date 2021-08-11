@@ -224,6 +224,12 @@ public class NativeQueryInfo implements Serializable, Cloneable {
                 orderBuilder.append(order.getProperty())
                         .append(" ")
                         .append(order.getDirection().name());
+
+                Sort.NullHandling nulls = order.getNullHandling();
+                if (nulls != Sort.NullHandling.NATIVE) {
+                    orderBuilder.append(" ")
+                            .append(nulls.name().replace('_', ' '));
+                }
             }
 
             sql += orderBuilder.toString();
