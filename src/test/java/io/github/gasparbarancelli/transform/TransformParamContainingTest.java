@@ -1,7 +1,8 @@
 package io.github.gasparbarancelli.transform;
 
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.function.Function;
 
@@ -12,19 +13,19 @@ public class TransformParamContainingTest {
     @Test
     public void applyNullable() {
         Object result = transform.apply(null);
-        Assert.assertNull(result);
+        Assertions.assertNull(result);
     }
 
     @Test
     public void applyEmpty() {
         Object result = transform.apply("");
-        Assert.assertNull(result);
+        Assertions.assertNull(result);
     }
 
     @Test
     public void applyWithValue() {
         Object result = transform.apply("test");
-        Assert.assertEquals("%test%", result);
+        Assertions.assertEquals("%test%", result);
     }
 
 }

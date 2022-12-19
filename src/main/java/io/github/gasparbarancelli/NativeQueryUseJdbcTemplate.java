@@ -6,9 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * By default all queries are executed with Hibernate, but you can change this adding
+ * By default, all queries are executed with Hibernate, but you can change this adding
  * the annotation @NativeQueryUseJdbcTemplate before the method.
- *
  * Warning: Doesn't work with methods that uses Pageable
  */
 @Target({ElementType.METHOD})
@@ -18,10 +17,8 @@ public @interface NativeQueryUseJdbcTemplate {
     /**
      * If useTenant is true then you have to create a service that implements the interface
      * NativeQueryTenantNamedParameterJdbcTemplateInterceptor.
-     *
      * In your SQL queries you have to add the parameter :SCHEMA before the table name.
      * Example SELECT * FROM :SCHEMA.USER;
-     *
      * The return of implementation NativeQueryTenantNamedParameterJdbcTemplateInterceptor
      * will replace the parameter :SCHEMA.
      *

@@ -1,19 +1,7 @@
 package io.github.gasparbarancelli;
 
-import java.io.File;
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.persistence.Entity;
-
+import io.github.gasparbarancelli.engine.jtwig.JtwigTemplateEngineSQLProcessor;
+import jakarta.persistence.Entity;
 import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +12,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 
-import io.github.gasparbarancelli.engine.jtwig.JtwigTemplateEngineSQLProcessor;
+import java.io.File;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.*;
 
 public class NativeQueryInfo implements Serializable, Cloneable {
 

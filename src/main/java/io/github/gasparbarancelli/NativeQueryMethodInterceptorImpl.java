@@ -1,9 +1,11 @@
 package io.github.gasparbarancelli;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import org.hibernate.Session;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.transform.Transformers;
-import org.hibernate.type.LongType;
+import org.hibernate.type.StandardBasicTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -11,8 +13,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,7 +140,7 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
     private Long getTotalRecords(NativeQueryInfo info, Session session) {
         LOGGER.debug("executing the query to obtain the number of records found to be used in the pagination");
         NativeQuery<?> query = session.createNativeQuery(info.getSqlTotalRecord());
-        query.unwrap(NativeQuery.class).addScalar("totalRecords", LongType.INSTANCE);
+        query.unwrap(NativeQuery.class).addScalar("totalRecords", StandardBasicTypes.LONG);
         addParameterJpa(query, info);
         return (Long) query.getSingleResult();
     }
