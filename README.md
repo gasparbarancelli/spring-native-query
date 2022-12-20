@@ -29,6 +29,7 @@ Here are some examples for a better understanding. Let's create a Spring Boot pr
 
 In your project add the dependency of the library, let's take an example using maven.
 
+For Spring Boot 2 with javax:
 ```
 <dependency>
   <groupId>io.github.gasparbarancelli</groupId>
@@ -36,6 +37,17 @@ In your project add the dependency of the library, let's take an example using m
   <version>1.0.30</version>
 </dependency>
 ```    
+
+For Spring Boot 3 with jakarta:
+```
+<dependency>
+  <groupId>io.github.gasparbarancelli</groupId>
+  <artifactId>spring-native-query</artifactId>
+  <version>2.0.0</version>
+</dependency>
+```   
+If you are using Spring Boot 3, you must tell Spring to scan the io.github package, as follows:
+@ComponentScan(basePackages = {"io.github", "here is your application package"})
 
 Inside the resource folder create a file named data.sql and insert the script.
 
