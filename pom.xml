@@ -4,7 +4,7 @@
 
     <groupId>io.github.gasparbarancelli</groupId>
     <artifactId>spring-native-query</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>3.0.0</version>
     <packaging>jar</packaging>
 
     <name>spring-native-query</name>
@@ -16,7 +16,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-parent</artifactId>
-                <version>3.0.0</version>
+                <version>4.0.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

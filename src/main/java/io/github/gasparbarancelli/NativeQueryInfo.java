@@ -9,13 +9,12 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.data.util.TypeInformation;
 
 import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 public class NativeQueryInfo implements Serializable, Cloneable {
@@ -101,14 +100,33 @@ public class NativeQueryInfo implements Serializable, Cloneable {
         info.returnTypeIsIterable = Iterable.class.isAssignableFrom(info.returnType);
         LOGGER.debug("return type is iterable {}", info.returnTypeIsIterable);
         if (info.returnTypeIsIterable || info.returnTypeIsOptional()) {
-            TypeInformation<?> componentType = ClassTypeInformation.fromReturnTypeOf(method).getComponentType();
-            info.aliasToBean = Objects.requireNonNull(componentType).getType();
+            info.aliasToBean = extractComponentType(method);
         } else {
             info.aliasToBean = info.returnType;
         }
         LOGGER.debug("return object is {}", info.aliasToBean.getName());
 
         return info;
+    }
+
+    private static Class<?> extractComponentType(Method method) {
+        var genericReturnType = method.getGenericReturnType();
+        if (genericReturnType instanceof ParameterizedType pt) {
+            var typeArgs = pt.getActualTypeArguments();
+            if (typeArgs.length > 0) {
+                if (typeArgs[0] instanceof Class) {
+                    return (Class<?>) typeArgs[0];
+                } else if (typeArgs[0] instanceof ParameterizedType t) {
+                    return (Class<?>) t.getRawType();
+                } else {
+                    throw new IllegalStateException("Tipo genérico não suportado: " + typeArgs[0]);
+                }
+            } else {
+                throw new IllegalStateException("Nenhum tipo genérico encontrado");
+            }
+        } else {
+            return method.getReturnType();
+        }
     }
 
     public static void setParameters(NativeQueryInfo info, MethodInvocation invocation) {
@@ -202,7 +220,7 @@ public class NativeQueryInfo implements Serializable, Cloneable {
         }
 
         for (Map.Entry<String, String> replaceSqlEntry : replaceSql.entrySet()) {
-            sql = sql.replaceAll("\\$\\{"+replaceSqlEntry.getKey()+"}", replaceSqlEntry.getValue());
+            sql = sql.replaceAll("\\$\\{" + replaceSqlEntry.getKey() + "}", replaceSqlEntry.getValue());
         }
 
         if (sort != null) {
