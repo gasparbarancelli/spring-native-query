@@ -71,9 +71,10 @@ public class NativeQueryCache {
 
             List<NativeQueryAccessMethod> accessMethods = getAccessMethods(classe);
             for (NativeQueryAccessMethod accessMethod : accessMethods) {
-                if (fieldInfoMap.get(accessMethod.getName()) == null) {
-                    fieldInfoMap.put(accessMethod.getName(), new NativeQueryFieldInfo(accessMethod.getParam(), accessMethod.getType()));
-                }
+                fieldInfoMap.computeIfAbsent(
+                        accessMethod.getName(),
+                        k -> new NativeQueryFieldInfo(accessMethod.getParam(), accessMethod.getType())
+                );
             }
 
             CACHE_FIELD_INFO.put(className, fieldInfoMap);

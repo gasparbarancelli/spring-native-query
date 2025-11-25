@@ -1,6 +1,5 @@
 package io.github.gasparbarancelli;
 
-import org.apache.commons.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,10 +36,10 @@ public class NativeQueryParameter implements Serializable, Cloneable {
                 NativeQueryParam queryParam = fieldInfo.getParam() != null ? fieldInfo.getParam() : accessMethod.getParam();
                 if (queryParam != null) {
                     if (queryParam.addChildren()) {
-                        String parentNameChildren = parentName + WordUtils.capitalize(queryParam.value());
+                        String parentNameChildren = parentName + NativeQueryStringUtils.capitalize(queryParam.value());
                         parameterList.addAll(ofDeclaredMethods(parentNameChildren, fieldInfo.getType(), value));
                     } else {
-                        String paramName = parentName + WordUtils.capitalize(queryParam.value());
+                        String paramName = parentName + NativeQueryStringUtils.capitalize(queryParam.value());
                         if (value instanceof Map) {
                             parameterList.addAll(ofMap((Map) value, paramName));
                         } else {

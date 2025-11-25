@@ -1,11 +1,11 @@
 package io.github.gasparbarancelli;
 
-import io.github.gasparbarancelli.engine.jtwig.JtwigTemplateEngineSQLProcessor;
+import io.github.gasparbarancelli.engine.freemarker.FreemarkerProcessorSql;
+import io.github.gasparbarancelli.engine.freemarker.FreemarkerTemplateEngineSQLProcessor;
 import jakarta.persistence.Entity;
 import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -51,7 +51,7 @@ public class NativeQueryInfo implements Serializable, Cloneable {
 
     private final Map<String, String> replaceSql = new HashMap<>();
 
-    private final List<Class<ProcessorSql>> processorSqlList = new ArrayList<>();
+    private final List<Class<? extends ProcessorSql>> processorSqlList = new ArrayList<>();
 
     private NativeQueryInfo() {
     }
@@ -69,12 +69,8 @@ public class NativeQueryInfo implements Serializable, Cloneable {
             setFile(classe, invocation, info);
         }
 
-        if (method.isAnnotationPresent(NativeQueryUseHibernateTypes.class)) {
-            info.useHibernateTypes = method.getAnnotation(NativeQueryUseHibernateTypes.class).useHibernateTypes();
-        } else {
-            info.useHibernateTypes = Boolean.parseBoolean(PropertyUtil.getValue("native-query.use-hibernate-types", "true"));
-        }
-        LOGGER.debug("use hibernate types {}", info.useHibernateTypes);
+        info.useHibernateTypes = true;
+        LOGGER.debug("use hibernate types");
 
         info.useJdbcTemplate = method.isAnnotationPresent(NativeQueryUseJdbcTemplate.class);
         if (info.useJdbcTemplate) {
@@ -83,6 +79,9 @@ public class NativeQueryInfo implements Serializable, Cloneable {
             info.useTenant = jdbcTemplate.useTenant();
             LOGGER.debug("use JdbcTemplate with tenant {}", info.useTenant);
         }
+
+        info.processorSqlList.add(FreemarkerProcessorSql.class);
+        LOGGER.debug("add processor sql {}", FreemarkerProcessorSql.class.getName());
 
         if (method.isAnnotationPresent(NativeQueryReplaceSql.class)) {
             if (method.getAnnotation(NativeQueryReplaceSql.class).values().length > 0) {
@@ -111,18 +110,18 @@ public class NativeQueryInfo implements Serializable, Cloneable {
 
     private static Class<?> extractComponentType(Method method) {
         var genericReturnType = method.getGenericReturnType();
-        if (genericReturnType instanceof ParameterizedType pt) {
-            var typeArgs = pt.getActualTypeArguments();
+        if (genericReturnType instanceof ParameterizedType parameterizedType) {
+            var typeArgs = parameterizedType.getActualTypeArguments();
             if (typeArgs.length > 0) {
                 if (typeArgs[0] instanceof Class) {
                     return (Class<?>) typeArgs[0];
                 } else if (typeArgs[0] instanceof ParameterizedType t) {
                     return (Class<?>) t.getRawType();
                 } else {
-                    throw new IllegalStateException("Tipo genérico não suportado: " + typeArgs[0]);
+                    throw new IllegalStateException("Generic type not supported: " + typeArgs[0]);
                 }
             } else {
-                throw new IllegalStateException("Nenhum tipo genérico encontrado");
+                throw new IllegalStateException("No generic type found for method: " + method.getName());
             }
         } else {
             return method.getReturnType();
@@ -172,7 +171,7 @@ public class NativeQueryInfo implements Serializable, Cloneable {
     }
 
     private static void setFile(Class<? extends NativeQuery> classe, MethodInvocation invocation, NativeQueryInfo info) {
-        info.file = PropertyUtil.getValue("native-query.sql.directory", NativeQueryAutoConfiguration.SQL_DIRECTORY);
+        info.file = NativeQueryAutoConfiguration.getSqlDirectory();
 
         if (!info.file.endsWith("/")) {
             info.file += "/";
@@ -189,16 +188,7 @@ public class NativeQueryInfo implements Serializable, Cloneable {
             info.file += method.getName() + ".";
         }
 
-        String fileSufix = PropertyUtil.getValue("native-query.file.sufix", "twig");
-
-        // backwards compatibility where the default extension was twig
-        if (new ClassPathResource(info.file + fileSufix).exists()) {
-            info.file += fileSufix;
-        } else if (new ClassPathResource(info.file + "sql").exists()) {
-            info.file += "sql";
-        } else {
-            info.file += "twig";
-        }
+        info.file += "sql";
 
         LOGGER.debug("sql obtained through the {} file", info.file);
     }
@@ -210,10 +200,10 @@ public class NativeQueryInfo implements Serializable, Cloneable {
 
         sql = getSqlProcessed();
 
-        for (Class<ProcessorSql> aClass : processorSqlList) {
+        for (Class<? extends ProcessorSql> aClass : processorSqlList) {
             try {
                 ProcessorSql processor = aClass.newInstance();
-                processor.execute(sql, replaceSql);
+                sql = processor.execute(sql, replaceSql);
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage());
             }
@@ -226,7 +216,7 @@ public class NativeQueryInfo implements Serializable, Cloneable {
         if (sort != null) {
             StringBuilder orderBuilder = new StringBuilder();
             for (Sort.Order order : sort) {
-                if (orderBuilder.length() == 0) {
+                if (orderBuilder.isEmpty()) {
                     orderBuilder.append(" ORDER BY ");
                 } else {
                     orderBuilder.append(", ");
@@ -256,7 +246,7 @@ public class NativeQueryInfo implements Serializable, Cloneable {
     }
 
     private String getSqlProcessed() {
-        return new JtwigTemplateEngineSQLProcessor()
+        return new FreemarkerTemplateEngineSQLProcessor()
                 .setParameter(parameterList)
                 .inline(useSqlInline)
                 .setClasspathTemplate(file)
@@ -368,7 +358,7 @@ public class NativeQueryInfo implements Serializable, Cloneable {
         return this.replaceSql;
     }
 
-    public List<Class<ProcessorSql>> getProcessorSqlList() {
+    public List<Class<? extends ProcessorSql>> getProcessorSqlList() {
         return this.processorSqlList;
     }
 
