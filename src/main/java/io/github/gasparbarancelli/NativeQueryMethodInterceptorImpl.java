@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.DataClassRowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.util.HashMap;
@@ -46,8 +46,8 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
             }
         }
 
-        LOGGER.debug("instantiating a BeanPropertyRowMapper of type {}", info.getAliasToBean().getName());
-        BeanPropertyRowMapper<?> beanPropertyRowMapper = new BeanPropertyRowMapper<>(info.getAliasToBean());
+        LOGGER.debug("instantiating a DataClassRowMapper of type {}", info.getAliasToBean().getName());
+        DataClassRowMapper<?> dataClassRowMapper = new DataClassRowMapper<>(info.getAliasToBean());
         if (info.getReturnType().getSimpleName().equals(Void.TYPE.getName())) {
             LOGGER.debug("running update");
             jdbcTemplate.update(info.getSql(), parametroList);
@@ -62,18 +62,18 @@ public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterc
 
             if (info.returnTypeIsOptional()) {
                 LOGGER.debug("executing the query and returning an optional {}", info.getAliasToBean().getName());
-                return getOptionalReturn(() -> jdbcTemplate.queryForObject(info.getSql(), parametroList, beanPropertyRowMapper));
+                return getOptionalReturn(() -> jdbcTemplate.queryForObject(info.getSql(), parametroList, dataClassRowMapper));
             }
 
             LOGGER.debug("executing the query and returning an object of type {}", info.getAliasToBean().getName());
-            return jdbcTemplate.queryForObject(info.getSql(), parametroList, beanPropertyRowMapper);
+            return jdbcTemplate.queryForObject(info.getSql(), parametroList, dataClassRowMapper);
         }
 
         LOGGER.debug("executing the query and returning a list of objects of type {}", info.getAliasToBean().getName());
         if (info.isJavaObject()) {
             return jdbcTemplate.queryForList(info.getSql(), parametroList, info.getAliasToBean());
         }
-        return jdbcTemplate.query(info.getSql(), parametroList, beanPropertyRowMapper);
+        return jdbcTemplate.query(info.getSql(), parametroList, dataClassRowMapper);
     }
 
     private Object executeWithEntityManager(NativeQueryInfo info) {
