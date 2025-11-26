@@ -19,6 +19,8 @@ public class NativeQueryCache {
 
     private static final Map<String, List<NativeQueryAccessMethod>> CACHE_ACCESS_METHODS = new HashMap<>();
 
+    private static final List<String> IGNORE_METHODS = Arrays.asList("toString", "hashCode", "equals");
+
     static NativeQueryInfo get(Class<? extends NativeQuery> classe, MethodInvocation invocation) {
         NativeQueryInfoKey nativeQueryInfoKey = new NativeQueryInfoKey(
                 classe.getName(),
@@ -53,7 +55,7 @@ public class NativeQueryCache {
         if (methods == null) {
             methods = new ArrayList<>();
             for (Method method : classe.getDeclaredMethods()) {
-                if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
+                if (!IGNORE_METHODS.contains(method.getName())) {
                     methods.add(new NativeQueryAccessMethod(method));
                 }
             }
