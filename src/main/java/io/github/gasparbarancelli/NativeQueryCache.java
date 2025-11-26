@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class NativeQueryCache {
 
@@ -20,10 +21,13 @@ public class NativeQueryCache {
 
     static NativeQueryInfo get(Class<? extends NativeQuery> classe, MethodInvocation invocation) {
         NativeQueryInfoKey nativeQueryInfoKey = new NativeQueryInfoKey(
-                classe.getName(), 
-                invocation.getMethod().getName()
+                classe.getName(),
+                invocation.getMethod().getName(),
+                Arrays.stream(invocation.getMethod().getParameterTypes())
+                        .map(Class::getName)
+                        .collect(Collectors.toList())
         );
-        LOGGER.debug("information cache key {}", nativeQueryInfoKey.toString());
+        LOGGER.debug("information cache key {}", nativeQueryInfoKey);
 
         NativeQueryInfo info = NativeQueryCache.CACHE_NATIVE_QUERY_INFO.get(nativeQueryInfoKey);
         if (info == null) {
@@ -93,26 +97,28 @@ public class NativeQueryCache {
     private static class NativeQueryInfoKey {
 
         String className;
-
         String methodName;
+        List<String> parameterTypes;
 
-        public NativeQueryInfoKey(String className, String methodName) {
+        public NativeQueryInfoKey(String className, String methodName, List<String> parameterTypes) {
             this.className = className;
             this.methodName = methodName;
+            this.parameterTypes = parameterTypes;
         }
 
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            NativeQueryInfoKey nativeQueryInfoKey = (NativeQueryInfoKey) o;
-            return Objects.equals(className, nativeQueryInfoKey.className) &&
-                    Objects.equals(methodName, nativeQueryInfoKey.methodName);
+            NativeQueryInfoKey that = (NativeQueryInfoKey) o;
+            return Objects.equals(className, that.className) &&
+                    Objects.equals(methodName, that.methodName) &&
+                    Objects.equals(parameterTypes, that.parameterTypes);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(className, methodName);
+            return Objects.hash(className, methodName, parameterTypes);
         }
 
         @Override
@@ -120,9 +126,9 @@ public class NativeQueryCache {
             return "NativeQueryInfoKey{" +
                     "className='" + className + '\'' +
                     ", methodName='" + methodName + '\'' +
+                    ", parameterTypes=" + parameterTypes +
                     '}';
         }
-
     }
 
 }
