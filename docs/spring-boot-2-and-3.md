@@ -1,219 +1,408 @@
-# spring-native-query
-![Github Issues](https://img.shields.io/github/issues/gasparbarancelli/spring-native-query.svg) ![Github Stars](https://img.shields.io/github/stars/gasparbarancelli/spring-native-query.svg) ![Java](https://img.shields.io/badge/java-100%25-brightgreen.svg) ![Twitter](https://img.shields.io/twitter/url/https/github.com%2Fgasparbarancelli%2Fspring-native-query.svg) ![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)
+# Spring Native Query with Spring Boot 2 and 3
 
-# about spring-native-query
+## About the Project
 
-Running native queries to relational database using Java often leaves the source code confusing and extensive, when one has too many filter conditions and also changes in table bindings.
+This project demonstrates the use of the [Spring Native Query](https://github.com/gasparbarancelli/spring-native-query) library in a Spring Boot 2 and 3 application, allowing the execution of native SQL queries in a safe, flexible, and decoupled way from JPA entities. Native Query maps results directly to DTOs or Java records, making data access more performant and simple.
 
-Because of this I decided to create the "Spring Native Query" library to facilitate the execution of native queries, with a focus on simplifying the source code, making it more readable and clean, creating files that contain the native queries and dynamically injecting assets to execute those queries.
+**Highlights:**
+- This project uses **Jtwig** as the template engine for SQL files, unlike the Spring Boot 4 example which uses Freemarker.
+- Compatible with Spring Boot 2.x and 3.x.
 
-The library's idea is to run convention queries, similar to Spring Data, and was built to work only with Spring Boot and Spring Data Jpa.
+## Main Features
+- **Automatic mapping:** Query results are converted to Java classes using compatible field names.
+- **Parameterized queries:** Allows passing parameters to native queries, preventing SQL Injection.
+- **Dynamic filters:** Supports flexible filters via annotations and filter objects.
+- **Integration with Spring Data:** Supports pagination, sorting, and usage of JdbcTemplate.
+- **External SQL files as Jtwig templates:** SQL files can contain Jtwig commands inside SQL comments (e.g., `/* if ... */`), making queries dynamic while keeping SQL readable and versionable.
+- **Naming convention:** The SQL file name must match the method name in the interface extending `NativeQuery`.
+- **Automatic Bean generation:** For each interface extending `NativeQuery`, a Spring Bean is automatically generated.
+- **Support for JdbcTemplate or EntityManager:** You can choose between JdbcTemplate or EntityManager for query execution.
 
-When creating a new interface that extends the NativeQuery interface, we create fake objects from these interfaces, where we use proxy to intercept method calls and execute queries, in the end we register the beans of those interfaces dynamically, so we can inject the interfaces into all the components of the Spring.
-
-The convention works as follows, the method name is the name of the file that contains the sql query, the parameters of the methods will be passed as parameters to the entity manager, the method return is the object that will be transformed with the result returned from the query.
-
-The file that contains the SQL query is a Jtwig template, where we can apply validations modifying the whole query, adding filters, changing links between tables, finally any changes in sql.
-
-By default native query files must be added to a folder named "nativeQuery" inside the resource folder. Remember, the file name must be the same as the method name.
-
-**in version 1.0.28 above we started using Hibernate Types to correctly convert data types, for previous versions consider disabling the use of Hibernate Types by the configuration below.**
+## Project Structure
 
 ```
-native-query.use-hibernate-types=false
+src/
+  main/
+    java/
+      io/github/gasparbarancelli/demospringnativequery/
+        DemoSpringNativeQueryApplication.java
+        UserController.java
+        UserFilter.java
+        UserNativeQuery.java
+        UserTO.java
+    resources/
+      application.properties
+      data.sql
+      nativeQuery/
+        findActiveUsers.sql
+        findActiveUsersWithPage.sql
+        findActiveUsersWithSort.sql
+        findOptionalUserById.sql
+        findUserById.sql
+        findUsers.sql
+        findUsersByFilter.sql
+        findWithMap.sql
+        getOptionalUserName.sql
+        getUserName.sql
+        getUsersId.sql
 ```
 
-# Example
+## Dependencies
+Add to your `pom.xml`:
 
-Here are some examples for a better understanding. Let's create a Spring Boot project with dependence, Spring Data Jpa and the H2 database. When starting the project, let's create a sql script by creating a new table and inserting some records. All sample source code is in [github](https://github.com/gasparbarancelli/demo-spring-native-query).
+To use NativeQuery in your Spring Boot 2 or 3 project, add the following dependency to your `pom.xml`:
 
-In your project add the dependency of the library, let's take an example using maven.
-
-For Spring Boot 2 with javax:
-```
+For Spring Boot 2 (javax):
+```xml
 <dependency>
   <groupId>io.github.gasparbarancelli</groupId>
   <artifactId>spring-native-query</artifactId>
   <version>1.0.30</version>
 </dependency>
-```    
-
-For Spring Boot 3 with jakarta:
 ```
+For Spring Boot 3 (jakarta):
+```xml
 <dependency>
   <groupId>io.github.gasparbarancelli</groupId>
   <artifactId>spring-native-query</artifactId>
   <version>2.0.0</version>
 </dependency>
-```   
-If you are using Spring Boot 3, you must tell Spring to scan the io.github package, as follows:
-@ComponentScan(basePackages = {"io.github", "here is your application package"})
-
-Inside the resource folder create a file named data.sql and insert the script.
-
-```sql
-CREATE TABLE USER (
-  cod INT NOT NULL,
-  full_name VARCHAR(45) NULL,
-  active INT NULL,
-  PRIMARY KEY (cod)
-);
-
-INSERT INTO USER (cod, full_name, active)
-VALUES (1, 'Gaspar', 1),
-       (2, 'Elton', 1),
-       (3, 'Lucini', 1),
-       (4, 'Diogo', 1),
-       (5, 'Daniel', 1),
-       (6, 'Marcos', 1),
-       (7, 'Fernanda', 1),
-       (8, 'Maicon', 1),
-       (9, 'Rafael', 0);
 ```
 
-First define in your configuration file the package scan of your project, The files application.properties, bootstrap.properties, application.yaml, application.yml, bootstrap.yml and bootstrap.yaml are supported, the property.
+```xml
+<!-- Spring Boot Starter Data JPA -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
 
-If you use properties file
-
-``` properties
-native-query.package-scan=io.github.gasparbarancelli.demospringnativequery
-native-query.file.sufix=sql
-native-query.use-hibernate-types=false
-```
-If you use yml file
-
-``` yml
-native-query:
-  package-scan: io.github.gasparbarancelli.demospringnativequery
-  file:
-    sufix: sql
-  use-hibernate-types: false
+<!-- Database driver -->
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <scope>runtime</scope>
+</dependency>
 ```
 
-We can also define programatically implementing the interface NativeQueryConfig.
+## Code Examples
 
-``` java
-import io.github.gasparbarancelli.NativeQueryConfig;
+### DemoSpringNativeQueryApplication.java
+```java
+package io.github.gasparbarancelli.demospringnativequery;
 
-public class NativeQueryDefaultConfig implements NativeQueryConfig {
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
-    @Override
-    public String getPackageScan() {
-        return "io.github.gasparbarancelli.demospringnativequery";
-    }
+/**
+ * Main application class for Spring Boot Native Query demo.
+ */
+@SpringBootApplication
+@ComponentScan(basePackages = {"io.github"})
+public class DemoSpringNativeQueryApplication {
 
-    @Override
-    public String getFileSufix() {
-        return "sql";
-    }
-    
-    @Override
-    public boolean getUseHibernateTypes() {
-        return false;
+    /**
+     * Application entry point.
+     */
+    public static void main(String[] args) {
+        SpringApplication.run(DemoSpringNativeQueryApplication.class, args);
     }
 
 }
 ```
 
-UserTO file example
-
+### UserTO.java
 ```java
-import lombok.*;
-
-@Data
+/**
+ * Data Transfer Object for User.
+ */
 public class UserTO {
-
-  private Number id;
-  private String name;
-
+    private Integer id; // User ID
+    private BigDecimal height; // User height
+    private String name; // User name
+    // Getters and setters
 }
 ```
 
-UserTO file example
-
+### UserFilter.java
 ```java
+package io.github.gasparbarancelli.demospringnativequery;
+
 import io.github.gasparbarancelli.NativeQueryOperator;
 import io.github.gasparbarancelli.NativeQueryParam;
 import lombok.*;
 
-@Data
+/**
+ * Filter object for querying users with dynamic parameters.
+ */
 public class UserFilter {
-  private Number id;
-  
-  // Custom operator, when add parameter value in query and jwitg, the paramter is transformed
-  @NativeQueryParam(value = "name", operator = NativeQueryOperator.CONTAINING)
-  private String name;
 
+    private Number id; // User ID filter
+
+    @NativeQueryParam(value = "name", operator = NativeQueryOperator.CONTAINING)
+    private String name; // Name filter (contains)
+    // Getters and setters
 }
 ```
 
-UserNativeQUery file example
-
+### UserNativeQuery.java
 ```java
+package io.github.gasparbarancelli.demospringnativequery;
+
 import io.github.gasparbarancelli.NativeQuery;
 import io.github.gasparbarancelli.NativeQueryParam;
+import io.github.gasparbarancelli.NativeQuerySql;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-
+/**
+ * Native Query interface for User operations.
+ */
+@Repository
 public interface UserNativeQuery extends NativeQuery {
 
-  List<UserTO> findUsers();
+    /**
+     * Find all users.
+     */
+    List<UserTO> findUsers();
 
-  // When using the NativeQuerySql annotation it is not necessary to have the file containing the sql statement
-  @NativeQuerySql("SELECT cod as \"id\", full_name as \"name\" FROM USER")
-  List<UserTO> findBySqlInline();
+    /**
+     * Find users using inline SQL.
+     */
+    @NativeQuerySql("SELECT cod as \"id\", full_name as \"name\" FROM USER")
+    List<UserTO> findBySqlInline();
 
-  List<UserTO> findWithMap(Map<String, Object> params);
-  
-  // Add fields children of parameter
-  List<UserTO> findUsersByFilter(@NativeQueryParam(value = "filter", addChildren = true) UserFilter filter);
-  
-  // Add pagination
-  List<UserTO> findActiveUsers(Pageable pageable);
+    /**
+     * Find users using a map of parameters.
+     */
+    List<UserTO> findWithMap(Map<String, Object> params);
 
-  // Ordering
-  List<UserTO> findActiveUsersWithSort(Sort sort);
+    /**
+     * Find users by filter object.
+     */
+    List<UserTO> findUsersByFilter(@NativeQueryParam(value = "filter", addChildren = true) UserFilter filter);
 
-  // Add pagination and return object with values for the pagination (count, page, size)
-  Page<UserTO> findActiveUsersWithPage(Pageable pageable);
-  
-  // Custom parameter name
-  UserTO findUserById(@NativeQueryParam(value = "codigo") Number id);
-  
-  List<Number> getUsersId();
-  
-  String getUserName(Number id);
-  
-  Optional<String> getOptionalUserName(Number id);
-  
-  Optional<UserTO> findOptionalUserById(@NativeQueryParam(value = "codigo") Number id);
-  
+    /**
+     * Find active users with pagination.
+     */
+    List<UserTO> findActiveUsers(Pageable pageable);
+
+    /**
+     * Find active users with sorting.
+     */
+    List<UserTO> findActiveUsersWithSort(Sort sort);
+
+    /**
+     * Find active users with pagination (returns Page).
+     */
+    Page<UserTO> findActiveUsersWithPage(Pageable pageable);
+
+    /**
+     * Find user by ID.
+     */
+    UserTO findUserById(@NativeQueryParam(value = "codigo") Number id);
+
+    /**
+     * Get all user IDs.
+     */
+    List<Number> getUsersId();
+
+    /**
+     * Get user name by ID.
+     */
+    String getUserName(Number id);
+
+    /**
+     * Get user name by ID (Optional).
+     */
+    Optional<String> getOptionalUserName(Number id);
+
+    /**
+     * Find user by ID (Optional).
+     */
+    Optional<UserTO> findOptionalUserById(@NativeQueryParam(value = "codigo") Number id);
+
 }
 ```
 
-findUsers.sql file example
+### UserController.java
+```java
+package io.github.gasparbarancelli.demospringnativequery;
 
-```sql
-SELECT cod as "id", full_name as "name" FROM USER
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ * REST controller for User endpoints.
+ */
+@RestController
+@RequestMapping("user")
+public class UserController {
+
+    private final UserNativeQuery userNativeQuery;
+
+    /**
+     * Constructor injection of UserNativeQuery.
+     */
+    public UserController(UserNativeQuery userNativeQuery) {
+        this.userNativeQuery = userNativeQuery;
+    }
+
+    /**
+     * Get all users.
+     */
+    @GetMapping()
+    public List<UserTO> findUsers() {
+        return userNativeQuery.findUsers();
+    }
+
+    /**
+     * Get users using inline SQL.
+     */
+    @GetMapping("inline")
+    public List<UserTO> findBySqlInline() {
+        return userNativeQuery.findBySqlInline();
+    }
+
+    /**
+     * Get users using parameters via Map.
+     */
+    @GetMapping("map")
+    public List<UserTO> findWithMap() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("cod", 1);
+        map.put("full_name", "Gaspar");
+        return userNativeQuery.findWithMap(map);
+    }
+
+    /**
+     * Get users using filter (POST).
+     */
+    @PostMapping("filter")
+    public List<UserTO> findUsers(@RequestBody UserFilter filter) {
+        return userNativeQuery.findUsersByFilter(filter);
+    }
+
+    /**
+     * Get active users (pagination).
+     */
+    @GetMapping("active")
+    public List<UserTO> findUsers(
+            @RequestParam(value = "page", defaultValue = "0", required = false) int page,
+            @RequestParam(value = "size", defaultValue = "10", required = false) int size) {
+        return userNativeQuery.findActiveUsers(PageRequest.of(page, size));
+    }
+
+    /**
+     * Get active users with pagination (Page).
+     */
+    @GetMapping("activeWithPage")
+    public Page<UserTO> findActiveUsersWithPage(
+            @RequestParam(value = "page", defaultValue = "0", required = false) int page,
+            @RequestParam(value = "size", defaultValue = "5", required = false) int size) {
+        return userNativeQuery.findActiveUsersWithPage(PageRequest.of(page, size));
+    }
+
+    /**
+     * Get active users with sorting.
+     */
+    @GetMapping("activeWithSort")
+    public List<UserTO> findActiveUsersWithSort(
+            @RequestParam(value = "columnName") String columnName) {
+        return userNativeQuery.findActiveUsersWithSort(Sort.by(columnName));
+    }
+
+    /**
+     * Get user by ID.
+     */
+    @GetMapping("{id}")
+    public UserTO findUser(@PathVariable("id") Number id) {
+        return userNativeQuery.findUserById(id);
+    }
+
+    /**
+     * Get all user IDs.
+     */
+    @GetMapping("ids")
+    public List<Number> getIds() {
+        return userNativeQuery.getUsersId();
+    }
+
+    /**
+     * Get user name by ID.
+     */
+    @GetMapping("{id}/name")
+    public String getUserName(@PathVariable("id") Number id) {
+        return userNativeQuery.getUserName(id);
+    }
+
+    /**
+     * Get user name by ID (Optional).
+     */
+    @GetMapping("{id}/optional/name")
+    public Optional<String> getOptionalUserName(@PathVariable("id") Number id) {
+        return userNativeQuery.getOptionalUserName(id);
+    }
+
+    /**
+     * Get user by ID (Optional).
+     */
+    @GetMapping("{id}/optional")
+    public Optional<UserTO> findOptionalUser(@PathVariable("id") Number id) {
+        return userNativeQuery.findOptionalUserById(id);
+    }
+
+}
 ```
 
-findWithMap.sql file example
+## SQL Examples
 
+Below are all SQL files used in the project, with their respective names and contents:
+
+### findActiveUsers.sql
 ```sql
-SELECT cod as "id", full_name as "name" FROM USER
-WHERE 1=1
-/* for item in params */
-AND {{item}} = :{{item}}
-/* endfor */
+SELECT cod as "id", full_name as "name" FROM USER WHERE ACTIVE = true
 ```
 
+### findActiveUsersWithPage.sql
+```sql
+SELECT cod as "id", full_name as "name" FROM USER WHERE ACTIVE = true
+```
 
-findUsersByFilter.sql file example, only add parameter when variables is not null
+### findActiveUsersWithSort.sql
+```sql
+SELECT cod as "id", full_name as "name" FROM USER WHERE ACTIVE = true
+```
 
+### findOptionalUserById.sql
+```sql
+SELECT cod as "id", full_name as "name" FROM USER WHERE cod = :codigo
+```
+
+### findUserById.sql
+```sql
+SELECT cod as "id", full_name as "name" FROM USER WHERE cod = :codigo
+```
+
+### findUsers.sql
+```sql
+SELECT cod as "id", height as "height", full_name as "name" FROM USER
+```
+
+### findUsersByFilter.sql
 ```sql
 SELECT cod as "id", full_name as "name" FROM USER
 WHERE 1=1
@@ -225,142 +414,104 @@ AND full_name like :filterName
 /* endif  */
 ```
 
-findActiveUsers.sql file example
-
+### findWithMap.sql
 ```sql
-SELECT cod as "id", full_name as "name" FROM USER WHERE ACTIVE = true
+SELECT cod as "id", full_name as "name" FROM USER
+WHERE 1=1
+/* for item in params */
+AND {{item}} = :{{item}}
+/* endfor */
 ```
 
-findActiveUsersWithPage.sql file example
-
+### getOptionalUserName.sql
 ```sql
-SELECT cod as "id", full_name as "name" FROM USER WHERE ACTIVE = true
+SELECT full_name as "name" FROM USER WHERE cod = :id
 ```
 
-findActiveUsersWithSort.sql file example
-
+### getUserName.sql
 ```sql
-SELECT cod as "id", full_name as "name" FROM USER WHERE ACTIVE = true
+SELECT full_name as "name" FROM USER WHERE cod = :id
 ```
 
-findUserById.sql file example
-
-```sql
-SELECT cod as "id", full_name as "name" FROM USER WHERE cod = :codigo
-```
-
-getUsersId.sql file example
-
+### getUsersId.sql
 ```sql
 SELECT cod as "id" FROM USER
 ```
 
-getUserName.sql file example
-
-```sql
-SELECT full_name as "name" FROM USER WHERE cod = :id
+## Configuration (application.properties)
+```properties
+native-query.package-scan=io.github.gasparbarancelli.demospringnativequery
+native-query.file.sufix=sql
+native-query.use-hibernate-types=false
 ```
 
-getOptionalUserName.sql file example
+## Testing Endpoints with cURL
 
-```sql
-SELECT full_name as "name" FROM USER WHERE cod = :id
+Below are example cURL commands to test all API endpoints:
+
+### 1. List all users
+```bash
+curl -X GET "http://localhost:8080/user"
 ```
 
-findOptionalUserById.sql file example
-
-```sql
-SELECT cod as "id", full_name as "name" FROM USER WHERE cod = :codigo
+### 2. Get users via inline SQL
+```bash
+curl -X GET "http://localhost:8080/user/inline"
 ```
 
-UserController file example
-
-```java
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
-@RestController
-@RequestMapping("user")
-public class UserController {
-
-  @Autowired private UserNativeQuery userNativeQuery;
-  
-  @GetMapping()
-  public List<UserTO> findUsers() {
-    return userNativeQuery.findUsers();
-  }
-  
-  @GetMapping("inline")
-  public List<UserTO> findBySqlInline() {
-    return userNativeQuery.findBySqlInline();
-  }
-  
-  @GetMapping("map")
-  public List<UserTO> findWithMap() {
-    Map<String, Object> map = new HashMap<>();
-    map.put("cod", 1);
-    map.put("full_name", "Gaspar");
-    return userNativeQuery.findWithMap(map);
-  }
-
-  @PostMapping("filter")
-  public List<UserTO> findUsers(@RequestBody UserFilter filter) {
-    return userNativeQuery.findUsersByFilter(filter);
-  }
-  
-  @GetMapping("active")
-  public List<UserTO> findUsers(
-          @RequestParam(value = "page", defaultValue = "0", required = false) int page,
-          @RequestParam(value = "size", defaultValue = "10", required = false) int size) {
-    return userNativeQuery.findActiveUsers(PageRequest.of(page, size));
-  }
-  
-  @GetMapping("activeWithPage")
-  public Page<UserTO> findActiveUsersWithPage(
-          @RequestParam(value = "page", defaultValue = "0", required = false) int page,
-          @RequestParam(value = "size", defaultValue = "5", required = false) int size) {
-    return userNativeQuery.findActiveUsersWithPage(PageRequest.of(page, size));
-  }
- 
-  @GetMapping("activeWithSort")
-  public List<UserTO> findActiveUsersWithSort(
-        @RequestParam(value = "columnName") String columnName) {
-    return userNativeQuery.findActiveUsersWithSort(Sort.by(columnName));
-  }
-
-  
-  @GetMapping("{id}")
-  public UserTO findUsers(@PathVariable("id") Number id) {
-    return userNativeQuery.findUserById(id);
-  }
-  
-  @GetMapping("ids")
-  public List<Number> getIds() {
-    return userNativeQuery.getUsersId();
-  }
-  
-  @GetMapping("{id}/name")
-  public String getUserName(@PathVariable("id") Number id) {
-    return userNativeQuery.getUserName(id);
-  }
-
-  @GetMapping("{id}/optional/name")
-  public Optional<String> getOptionalUserName(@PathVariable("id") Number id) {
-    return userNativeQuery.getOptionalUserName(id);
-  }
-
-  @GetMapping("{id}/optional")
-  public Optional<UserTO> findOptionalUser(@PathVariable("id") Number id) {
-    return userNativeQuery.findOptionalUserById(id);
-  }
-
-
-}
+### 3. Get users using parameters via Map
+```bash
+curl -X GET "http://localhost:8080/user/map"
 ```
 
-[Return to main documentation](index.md)
+### 4. Get users using filter (POST)
+```bash
+curl -X POST "http://localhost:8080/user/filter" \
+     -H "Content-Type: application/json" \
+     -d '{"id":1, "name":"Gaspar"}'
+```
+
+### 5. Get active users (pagination)
+```bash
+curl -X GET "http://localhost:8080/user/active?page=0&size=10"
+```
+
+### 6. Get active users with pagination (Page)
+```bash
+curl -X GET "http://localhost:8080/user/activeWithPage?page=0&size=5"
+```
+
+### 7. Get active users with sorting
+```bash
+curl -X GET "http://localhost:8080/user/activeWithSort?columnName=full_name"
+```
+
+### 8. Get user by ID
+```bash
+curl -X GET "http://localhost:8080/user/1"
+```
+
+### 9. Get all user IDs
+```bash
+curl -X GET "http://localhost:8080/user/ids"
+```
+
+### 10. Get user name by ID
+```bash
+curl -X GET "http://localhost:8080/user/1/name"
+```
+
+### 11. Get user name by ID (Optional)
+```bash
+curl -X GET "http://localhost:8080/user/1/optional/name"
+```
+
+### 12. Get user by ID (Optional)
+```bash
+curl -X GET "http://localhost:8080/user/1/optional"
+```
+
+## Notes
+- SQL files use **Jtwig** for conditional and dynamic logic, always inside SQL comments (`/* if ... */`).
+- Native Query makes it easy to map results directly to DTOs, without needing JPA entities.
+- Adapt the examples according to your data model.
