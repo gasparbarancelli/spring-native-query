@@ -507,6 +507,14 @@ curl -X GET "http://localhost:8080/sales/customers/pageable?page=0&size=10"
 
 ---
 
+## Breaking Notes
+
+**Template Engine Change:**
+
+The project previously used Jtwig as the SQL template engine. However, Jtwig has been discontinued, so the template engine was replaced with Freemarker. All SQL file templating now uses Freemarker syntax. This change improves maintainability and future compatibility.
+
+---
+
 ## Notes
 - The SQL examples and query implementations can be adapted to your data model.
 - The `nativequery` library makes it easy to map native query results directly to DTOs and Java records.
