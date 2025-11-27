@@ -4,7 +4,7 @@
 
     <groupId>io.github.gasparbarancelli</groupId>
     <artifactId>spring-native-query</artifactId>
-    <version>4.0.1-SNAPSHOT</version>
+    <version>4.0.0</version>
     <packaging>jar</packaging>
 
     <name>spring-native-query</name>
@@ -12,7 +12,7 @@
     <url>https://github.com/gasparbarancelli/spring-native-query</url>
 
     <dependencyManagement>
-        <dependencies> <!-- The parent should provide all that -->
+        <dependencies>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-parent</artifactId>
@@ -34,7 +34,8 @@
         <maven.scm.provider.gitexe.version>1.9.5</maven.scm.provider.gitexe.version>
         <source.plugin.version>3.2.1</source.plugin.version>
         <deploy.plugin.version>3.0.0</deploy.plugin.version>
-        <nexus.staging.maven.plugin.version>1.6.13</nexus.staging.maven.plugin.version>
+        <!-- Versão do novo plugin do Central Portal -->
+        <central.publishing.plugin.version>0.7.0</central.publishing.plugin.version>
     </properties>
 
     <dependencies>
@@ -89,16 +90,7 @@
         <tag>spring-native-query-4.0.0</tag>
     </scm>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
+    <!-- DistributionManagement removido pois o central-publishing-maven-plugin lida com isso -->
 
     <issueManagement>
         <system>Github</system>
@@ -112,6 +104,23 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.1</version>
             </plugin>
+
+            <!-- Plugin para o novo Central Portal -->
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>${central.publishing.plugin.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <!-- Deve corresponder ao ID no seu settings.xml -->
+                    <publishingServerId>central</publishingServerId>
+                    <!-- Usa token de usuário em vez de senha -->
+                    <tokenAuth>true</tokenAuth>
+                    <!-- Publica automaticamente se passar nas validações (sem precisar clicar em Publish no site) -->
+                    <autoPublish>true</autoPublish>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>${deploy.plugin.version}</version>
@@ -155,17 +164,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>${nexus.staging.maven.plugin.version}</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
             </plugin>
         </plugins>
     </build>
