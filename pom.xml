@@ -4,7 +4,7 @@
 
     <groupId>io.github.gasparbarancelli</groupId>
     <artifactId>spring-native-query</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>spring-native-query</name>
@@ -86,17 +86,17 @@
         <connection>scm:git:git://github.com/gasparbarancelli/spring-native-query.git</connection>
         <developerConnection>scm:git:ssh://github.com:gasparbarancelli/spring-native-query.git</developerConnection>
         <url>https://github.com/gasparbarancelli/spring-native-query</url>
-        <tag>spring-native-query-1.0.29</tag>
+        <tag>spring-native-query-4.0.0</tag>
     </scm>
 
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <repository>
             <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
 
