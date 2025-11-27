@@ -575,3 +575,5 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - SQL files use **Jtwig** for conditional and dynamic logic, always inside SQL comments (`/* if ... */`).
 - Native Query makes it easy to map results directly to DTOs, without needing JPA entities.
 - Adapt the examples according to your data model.
+  
+[Return to main documentation](index.md)
