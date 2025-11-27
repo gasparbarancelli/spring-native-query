@@ -11,6 +11,6 @@ public @interface NativeQueryReplaceSql {
 
     NativeQueryReplaceSqlParams[] values() default {};
 
-    Class<ProcessorSql>[] processorParams() default {};
+    Class<? extends ProcessorSql>[] processorParams() default {};
 
 }

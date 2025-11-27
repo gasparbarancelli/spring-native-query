@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 public class TransformParamEndsWithTest {
 
-    private Function<Object, Object> transform = new TransformParamEndsWith();
+    private final Function<Object, Object> transform = new TransformParamEndsWith();
 
     @Test
     public void applyNullable() {

@@ -15,7 +15,7 @@ public class NativeQueryAccessMethod {
 
     public NativeQueryAccessMethod(Method method) {
         this.method = method;
-        this.name = method.getName().substring(method.getName().startsWith("get") ? 3 : 2);
+        this.name = method.getName().substring(method.getName().startsWith("get") ? 3 : method.getName().startsWith("is") ? 2 : 0);
         if (method.getAnnotatedReturnType().getType() instanceof ParameterizedType) {
             this.type = (Class<?>) ((ParameterizedType) method.getAnnotatedReturnType().getType()).getRawType();
         } else {

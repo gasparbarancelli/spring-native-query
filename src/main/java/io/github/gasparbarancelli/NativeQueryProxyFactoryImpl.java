@@ -1,7 +1,6 @@
 package io.github.gasparbarancelli;
 
 import org.aopalliance.intercept.MethodInterceptor;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
@@ -52,7 +51,7 @@ public class NativeQueryProxyFactoryImpl implements NativeQueryProxyFactory {
     public Object create(Class<? extends NativeQuery> classe) {
         LOGGER.debug("creating an {} interface proxy", classe.getName());
         ProxyFactory proxy = new ProxyFactory();
-        proxy.setTarget(Mockito.mock(classe));
+        proxy.setTarget(classe);
         proxy.setInterfaces(classe, NativeQuery.class);
         proxy.addAdvice((MethodInterceptor) invocation -> {
             if ("toString".equals(invocation.getMethod().getName())) {

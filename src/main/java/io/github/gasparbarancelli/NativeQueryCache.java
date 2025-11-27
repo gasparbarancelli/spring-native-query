@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class NativeQueryCache {
 
@@ -18,12 +19,17 @@ public class NativeQueryCache {
 
     private static final Map<String, List<NativeQueryAccessMethod>> CACHE_ACCESS_METHODS = new HashMap<>();
 
+    private static final List<String> IGNORE_METHODS = Arrays.asList("toString", "hashCode", "equals");
+
     static NativeQueryInfo get(Class<? extends NativeQuery> classe, MethodInvocation invocation) {
         NativeQueryInfoKey nativeQueryInfoKey = new NativeQueryInfoKey(
-                classe.getName(), 
-                invocation.getMethod().getName()
+                classe.getName(),
+                invocation.getMethod().getName(),
+                Arrays.stream(invocation.getMethod().getParameterTypes())
+                        .map(Class::getName)
+                        .collect(Collectors.toList())
         );
-        LOGGER.debug("information cache key {}", nativeQueryInfoKey.toString());
+        LOGGER.debug("information cache key {}", nativeQueryInfoKey);
 
         NativeQueryInfo info = NativeQueryCache.CACHE_NATIVE_QUERY_INFO.get(nativeQueryInfoKey);
         if (info == null) {
@@ -49,7 +55,7 @@ public class NativeQueryCache {
         if (methods == null) {
             methods = new ArrayList<>();
             for (Method method : classe.getDeclaredMethods()) {
-                if (method.getName().startsWith("get") || method.getName().startsWith("is")) {
+                if (!IGNORE_METHODS.contains(method.getName())) {
                     methods.add(new NativeQueryAccessMethod(method));
                 }
             }
@@ -71,9 +77,10 @@ public class NativeQueryCache {
 
             List<NativeQueryAccessMethod> accessMethods = getAccessMethods(classe);
             for (NativeQueryAccessMethod accessMethod : accessMethods) {
-                if (fieldInfoMap.get(accessMethod.getName()) == null) {
-                    fieldInfoMap.put(accessMethod.getName(), new NativeQueryFieldInfo(accessMethod.getParam(), accessMethod.getType()));
-                }
+                fieldInfoMap.computeIfAbsent(
+                        accessMethod.getName(),
+                        k -> new NativeQueryFieldInfo(accessMethod.getParam(), accessMethod.getType())
+                );
             }
 
             CACHE_FIELD_INFO.put(className, fieldInfoMap);
@@ -92,26 +99,28 @@ public class NativeQueryCache {
     private static class NativeQueryInfoKey {
 
         String className;
-
         String methodName;
+        List<String> parameterTypes;
 
-        public NativeQueryInfoKey(String className, String methodName) {
+        public NativeQueryInfoKey(String className, String methodName, List<String> parameterTypes) {
             this.className = className;
             this.methodName = methodName;
+            this.parameterTypes = parameterTypes;
         }
 
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            NativeQueryInfoKey nativeQueryInfoKey = (NativeQueryInfoKey) o;
-            return Objects.equals(className, nativeQueryInfoKey.className) &&
-                    Objects.equals(methodName, nativeQueryInfoKey.methodName);
+            NativeQueryInfoKey that = (NativeQueryInfoKey) o;
+            return Objects.equals(className, that.className) &&
+                    Objects.equals(methodName, that.methodName) &&
+                    Objects.equals(parameterTypes, that.parameterTypes);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(className, methodName);
+            return Objects.hash(className, methodName, parameterTypes);
         }
 
         @Override
@@ -119,9 +128,9 @@ public class NativeQueryCache {
             return "NativeQueryInfoKey{" +
                     "className='" + className + '\'' +
                     ", methodName='" + methodName + '\'' +
+                    ", parameterTypes=" + parameterTypes +
                     '}';
         }
-
     }
 
 }

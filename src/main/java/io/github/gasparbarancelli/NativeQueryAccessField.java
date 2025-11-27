@@ -1,7 +1,5 @@
 package io.github.gasparbarancelli;
 
-import org.apache.commons.text.WordUtils;
-
 import java.lang.reflect.Field;
 
 public class NativeQueryAccessField {
@@ -13,7 +11,7 @@ public class NativeQueryAccessField {
     private NativeQueryParam param;
 
     public NativeQueryAccessField(Field field) {
-        this.name = WordUtils.capitalize(field.getName());
+        this.name = NativeQueryStringUtils.capitalize(field.getName());
         this.type = field.getType();
         if (field.isAnnotationPresent(NativeQueryParam.class)) {
             this.param = field.getAnnotation(NativeQueryParam.class);

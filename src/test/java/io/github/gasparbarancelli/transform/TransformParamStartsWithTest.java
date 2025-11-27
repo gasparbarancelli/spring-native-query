@@ -7,7 +7,7 @@ import java.util.function.Function;
 
 public class TransformParamStartsWithTest {
 
-    private Function<Object, Object> transform = new TransformParamStartsWith();
+    private final Function<Object, Object> transform = new TransformParamStartsWith();
 
     @Test
     public void applyNullable() {

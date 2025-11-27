@@ -1,13 +1,11 @@
 package io.github.gasparbarancelli.transform;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.function.Function;
 
 abstract class TransformParamString {
 
     Object executeWhenValueIsNotBlank(Object value, Function<Object, Object> function) {
-        if (value != null && StringUtils.isNotBlank(value.toString())) {
+        if (value != null && !value.toString().trim().isEmpty()) {
             return function.apply(value);
         }
         return null;
