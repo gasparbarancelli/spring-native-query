@@ -1,3 +1,6 @@
+---
+layout: default
+---
 # Spring Native Query with Spring Boot 2 and 3
 
 ## About
@@ -559,6 +562,14 @@ curl -X GET "http://localhost:8080/user/1/optional/name"
 ```bash
 curl -X GET "http://localhost:8080/user/1/optional"
 ```
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
 
 ## Notes
 - SQL files use **Jtwig** for conditional and dynamic logic, always inside SQL comments (`/* if ... */`).

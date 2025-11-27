@@ -1,3 +1,6 @@
+---
+layout: default
+---
 # Spring Native Query
 
 Increase your productivity and code quality with Spring Native Query, the library that revolutionizes native query access in Spring Boot applications. Designed for those seeking flexibility, organization, and power in SQL manipulation, our library delivers a superior experience for modern projects, including full support for Spring Boot 4.
@@ -135,6 +138,14 @@ public class SaleController {
 ```
 
 This example shows that with just one SQL file, an interface, and a controller, you can query native data simply and efficiently.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
 
 ## Contribute and Join Us
 

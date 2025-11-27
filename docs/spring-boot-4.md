@@ -1,3 +1,6 @@
+---
+layout: default
+---
 # Spring Native Query with Spring Boot 4
 
 ## About
@@ -507,6 +510,12 @@ curl -X GET "http://localhost:8080/sales/customers/pageable?page=0&size=10"
 
 ---
 
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
 ## Breaking Notes
 
 **Template Engine Change:**
@@ -520,3 +529,4 @@ The project previously used Jtwig as the SQL template engine. However, Jtwig has
 - The `nativequery` library makes it easy to map native query results directly to DTOs and Java records.
 
 [Return to main documentation](index.md)
+
