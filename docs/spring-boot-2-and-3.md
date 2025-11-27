@@ -1,12 +1,8 @@
 # Spring Native Query with Spring Boot 2 and 3
 
-## About the Project
+## About
 
-This project demonstrates the use of the [Spring Native Query](https://github.com/gasparbarancelli/spring-native-query) library in a Spring Boot 2 and 3 application, allowing the execution of native SQL queries in a safe, flexible, and decoupled way from JPA entities. Native Query maps results directly to DTOs or Java records, making data access more performant and simple.
-
-**Highlights:**
-- This project uses **Jtwig** as the template engine for SQL files, unlike the Spring Boot 4 example which uses Freemarker.
-- Compatible with Spring Boot 2.x and 3.x.
+The [Spring Native Query](https://github.com/gasparbarancelli/spring-native-query) library enables you to execute native SQL queries in Spring Boot 2 or 3 projects in a simple, safe, and flexible way. It allows you to map query results directly to Java classes (DTOs) without the need for JPA entities, making data access more performant and decoupled.
 
 ## Main Features
 - **Automatic mapping:** Query results are converted to Java classes using compatible field names.
@@ -17,6 +13,22 @@ This project demonstrates the use of the [Spring Native Query](https://github.co
 - **Naming convention:** The SQL file name must match the method name in the interface extending `NativeQuery`.
 - **Automatic Bean generation:** For each interface extending `NativeQuery`, a Spring Bean is automatically generated.
 - **Support for JdbcTemplate or EntityManager:** You can choose between JdbcTemplate or EntityManager for query execution.
+
+---
+
+# Usage Example
+
+In this example, SpringNativeQuery is used to:
+- Retrieve complete and aggregated sales by customer.
+- Use dynamic filters and parameters in native queries.
+- Map results directly to DTOs, without JPA entities.
+
+This example demonstrates how to use the [Spring Native Query](https://github.com/gasparbarancelli/spring-native-query) library in a Spring Boot 4 application to perform native SQL queries and map results directly to Java classes.
+
+## Demo Repository
+
+You can find a complete demo project here: [spring-boot-2-and-3-database-native-query-demo](https://github.com/gasparbarancelli/demo-spring-native-query)
+
 
 ## Project Structure
 
@@ -68,6 +80,8 @@ For Spring Boot 3 (jakarta):
   <version>2.0.0</version>
 </dependency>
 ```
+
+Other dependencies:
 
 ```xml
 <!-- Spring Boot Starter Data JPA -->
@@ -443,6 +457,41 @@ SELECT cod as "id" FROM USER
 native-query.package-scan=io.github.gasparbarancelli.demospringnativequery
 native-query.file.sufix=sql
 native-query.use-hibernate-types=false
+```
+
+If you use yml file
+
+``` yml
+native-query:
+  package-scan: io.github.gasparbarancelli.demospringnativequery
+  file:
+    sufix: sql
+  use-hibernate-types: false
+```
+
+We can also define programatically implementing the interface NativeQueryConfig.
+
+``` java
+import io.github.gasparbarancelli.NativeQueryConfig;
+
+public class NativeQueryDefaultConfig implements NativeQueryConfig {
+
+    @Override
+    public String getPackageScan() {
+        return "io.github.gasparbarancelli.demospringnativequery";
+    }
+
+    @Override
+    public String getFileSufix() {
+        return "sql";
+    }
+    
+    @Override
+    public boolean getUseHibernateTypes() {
+        return false;
+    }
+
+}
 ```
 
 ## Testing Endpoints with cURL
