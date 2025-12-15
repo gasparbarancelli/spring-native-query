@@ -9,20 +9,49 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Represents a parameter to be used in a native query.
+ *
+ * <p>This class encapsulates the name and value of a query parameter. It also provides
+ * static factory methods for creating lists of parameters from filter objects or maps.</p>
+ *
+ * <p>When creating parameters from a filter object, this class uses reflection to inspect
+ * the object's fields and methods, taking into account {@link NativeQueryParam} annotations
+ * to determine the parameter names and transformations.</p>
+ *
+ * @see NativeQueryParam
+ * @see NativeQueryInfo
+ */
 public class NativeQueryParameter implements Serializable, Cloneable {
 
-    // todo adicionar log
     private static final Logger LOGGER = LoggerFactory.getLogger(NativeQueryParameter.class);
 
     private final String name;
 
     private final Object value;
 
+    /**
+     * Constructs a new {@code NativeQueryParameter}.
+     *
+     * @param name  The name of the parameter.
+     * @param value The value of the parameter.
+     */
     public NativeQueryParameter(String name, Object value) {
         this.name = name;
         this.value = value;
     }
 
+    /**
+     * Creates a list of {@code NativeQueryParameter}s from a filter object.
+     *
+     * <p>This method recursively introspects the fields and methods of a filter object,
+     * creating parameters based on their values and annotations.</p>
+     *
+     * @param parentName The parent name to be prepended to the parameter names.
+     * @param classe     The class of the filter object.
+     * @param object     The filter object instance.
+     * @return A list of query parameters.
+     */
     static List<NativeQueryParameter> ofDeclaredMethods(String parentName, Class<?> classe, Object object) {
         ArrayList<NativeQueryParameter> parameterList = new ArrayList<>();
 
@@ -69,6 +98,13 @@ public class NativeQueryParameter implements Serializable, Cloneable {
         }
     }
 
+    /**
+     * Creates a list of {@code NativeQueryParameter}s from a map.
+     *
+     * @param map  The map containing the parameters.
+     * @param name The name to be used for the map's keyset parameter.
+     * @return A list of query parameters.
+     */
     static List<NativeQueryParameter> ofMap(Map map, String name) {
         ArrayList<NativeQueryParameter> parameterList = new ArrayList<>();
         parameterList.add(new NativeQueryParameter(name, map.keySet()));
@@ -76,10 +112,20 @@ public class NativeQueryParameter implements Serializable, Cloneable {
         return parameterList;
     }
 
+    /**
+     * Returns the name of the parameter.
+     *
+     * @return The parameter name.
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Returns the value of the parameter.
+     *
+     * @return The parameter value.
+     */
     public Object getValue() {
         return this.value;
     }
@@ -91,8 +137,8 @@ public class NativeQueryParameter implements Serializable, Cloneable {
 
     @Override
     public String toString() {
-        return "NativeQueryParameter{" +
-                "name='" + name + '\'' +
+        return "NativeQueryParameter{"
+                + "name='" + name + "'" +
                 ", value=" + value +
                 '}';
     }

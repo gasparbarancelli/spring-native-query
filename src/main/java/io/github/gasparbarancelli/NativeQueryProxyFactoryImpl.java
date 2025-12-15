@@ -5,47 +5,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
+/**
+ * The default implementation of {@link NativeQueryProxyFactory}.
+ *
+ * <p>This class uses Spring's {@link ProxyFactory} to create proxy instances for
+ * {@link NativeQuery} interfaces. The created proxy is advised with a
+ * {@link MethodInterceptor} that intercepts method calls, gathers query information,
+ * and delegates the execution to a {@link NativeQueryMethodInterceptor}.</p>
+ *
+ * @see NativeQueryProxyFactory
+ * @see ProxyFactory
+ * @see NativeQueryMethodInterceptor
+ */
 public class NativeQueryProxyFactoryImpl implements NativeQueryProxyFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NativeQueryProxyFactoryImpl.class);
 
     private final NativeQueryMethodInterceptor nativeQueryMethodInterceptor;
 
+    /**
+     * Constructs a new {@code NativeQueryProxyFactoryImpl} with a default method interceptor.
+     */
     public NativeQueryProxyFactoryImpl() {
         this.nativeQueryMethodInterceptor = new NativeQueryMethodInterceptorImpl();
     }
-
-    private static class CacheKey {
-
-        String className;
-
-        String methodName;
-
-        public CacheKey(String className, String methodName) {
-            this.className = className;
-            this.methodName = methodName;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            CacheKey cacheKey = (CacheKey) o;
-            return Objects.equals(className, cacheKey.className) &&
-                    Objects.equals(methodName, cacheKey.methodName);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(className, methodName);
-        }
-    }
-
-    private static final Map<CacheKey, NativeQueryInfo> cache = new HashMap<>();
 
     @Override
     public Object create(Class<? extends NativeQuery> classe) {

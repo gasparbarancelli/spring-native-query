@@ -19,6 +19,27 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+/**
+ * The default implementation of {@link NativeQueryMethodInterceptor}.
+ *
+ * <p>This class contains the core logic for executing native SQL queries. It can operate
+ * in two modes: using JPA's {@link EntityManager} or Spring's {@link NamedParameterJdbcTemplate}.
+ * The choice between these two is determined by the presence of the {@link NativeQueryUseJdbcTemplate}
+ * annotation on the invoked method.</p>
+ *
+ * <p>The interceptor handles various scenarios, including:</p>
+ * <ul>
+ *   <li>Single result, list, and paginated queries.</li>
+ *   <li>Mapping results to entities, DTOs, or simple Java types.</li>
+ *   <li>Handling of {@code Optional} return types.</li>
+ *   <li>Parameter binding for both JPA and JDBC queries.</li>
+ * </ul>
+ *
+ * @see NativeQueryMethodInterceptor
+ * @see NativeQueryInfo
+ * @see EntityManager
+ * @see NamedParameterJdbcTemplate
+ */
 public class NativeQueryMethodInterceptorImpl implements NativeQueryMethodInterceptor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NativeQueryMethodInterceptorImpl.class);

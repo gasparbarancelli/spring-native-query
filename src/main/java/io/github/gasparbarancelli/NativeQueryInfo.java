@@ -17,6 +17,20 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
+/**
+ * Encapsulates all the information required to execute a native query for a specific method invocation.
+ *
+ * <p>This class gathers and holds metadata about a method in a {@link NativeQuery} interface,
+ * including the SQL to be executed, parameter details, return type information, and configuration
+ * options like pagination, sorting, and whether to use JDBC template or Hibernate.</p>
+ *
+ * <p>Instances of this class are created and cached by {@link NativeQueryCache} to avoid
+ * repeated processing for the same method invocation. The object is cloneable to ensure
+ * that each invocation gets a mutable copy while preserving the cached template.</p>
+ *
+ * @see NativeQueryCache
+ * @see MethodInvocation
+ */
 public class NativeQueryInfo implements Serializable, Cloneable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NativeQueryInfo.class);
@@ -56,6 +70,13 @@ public class NativeQueryInfo implements Serializable, Cloneable {
     private NativeQueryInfo() {
     }
 
+    /**
+     * Creates a new {@code NativeQueryInfo} instance by introspecting a method invocation.
+     *
+     * @param classe     The {@link NativeQuery} interface class.
+     * @param invocation The method invocation to be analyzed.
+     * @return A new {@code NativeQueryInfo} instance.
+     */
     public static NativeQueryInfo of(Class<? extends NativeQuery> classe, MethodInvocation invocation) {
         NativeQueryInfo info = new NativeQueryInfo();
 
@@ -74,10 +95,10 @@ public class NativeQueryInfo implements Serializable, Cloneable {
 
         info.useJdbcTemplate = method.isAnnotationPresent(NativeQueryUseJdbcTemplate.class);
         if (info.useJdbcTemplate) {
-            LOGGER.debug("use JdbcTemplate");
+            LOGGER.debug("useJdbcTemplate");
             NativeQueryUseJdbcTemplate jdbcTemplate = method.getAnnotation(NativeQueryUseJdbcTemplate.class);
             info.useTenant = jdbcTemplate.useTenant();
-            LOGGER.debug("use JdbcTemplate with tenant {}", info.useTenant);
+            LOGGER.debug("useJdbcTemplate with tenant {}", info.useTenant);
         }
 
         info.processorSqlList.add(FreemarkerProcessorSql.class);
@@ -128,6 +149,12 @@ public class NativeQueryInfo implements Serializable, Cloneable {
         }
     }
 
+    /**
+     * Populates the query parameters, pageable, and sort information from a method invocation.
+     *
+     * @param info       The {@code NativeQueryInfo} instance to be populated.
+     * @param invocation The method invocation containing the arguments.
+     */
     public static void setParameters(NativeQueryInfo info, MethodInvocation invocation) {
         info.sql = null;
         info.sort = null;
@@ -193,6 +220,11 @@ public class NativeQueryInfo implements Serializable, Cloneable {
         LOGGER.debug("sql obtained through the {} file", info.file);
     }
 
+    /**
+     * Returns the processed SQL string to be executed.
+     *
+     * @return The final SQL string.
+     */
     String getSql() {
         if (sql != null) {
             return sql;
@@ -254,6 +286,11 @@ public class NativeQueryInfo implements Serializable, Cloneable {
                 .getSql();
     }
 
+    /**
+     * Returns the SQL string for counting the total number of records for a paginated query.
+     *
+     * @return The count SQL string.
+     */
     String getSqlTotalRecord() {
         String sqlCount = "select count(*) as totalRecords from (" + getSql() + ") x";
         LOGGER.debug("SQL Count to be executed: {}", sql);
