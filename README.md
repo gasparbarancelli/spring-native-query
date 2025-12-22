@@ -402,8 +402,10 @@ VALUES (1, 'CREDIT_CARD', 2500.00, '2024-06-01 10:05:00'),
 ```
 
 ### findSales.sql
+
+Native query to fetch complete sales
+
 ```sql
--- Native query to fetch complete sales
 SELECT
     s.id AS id,
     s.sale_date AS saleDate,
@@ -450,8 +452,10 @@ ORDER BY s.id, si.id, sp.id
 ```
 
 ### findSalesCustomers.sql
+
+Native query to fetch aggregated sales by customer
+
 ```sql
--- Native query to fetch aggregated sales by customer
 SELECT
     s.id AS id,
     s.total_amount AS totalAmount,
